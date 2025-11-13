@@ -27,17 +27,18 @@ public class LandingPage extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         jFrame1 = new javax.swing.JFrame();
         jFrame2 = new javax.swing.JFrame();
         jFrame3 = new javax.swing.JFrame();
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
         jFrame1.getContentPane().setLayout(jFrame1Layout);
@@ -76,14 +77,24 @@ public class LandingPage extends javax.swing.JFrame {
         setBackground(new java.awt.Color(51, 204, 0));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI Black", 1, 36)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("UKM");
-
-        jLabel2.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jLabel2.setText("Mari mulai peminjaman dengan cara yang Modern");
+        jButton1.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(0, 153, 0));
+        jButton1.setText("Daftar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.ipadx = 226;
+        gridBagConstraints.ipady = 29;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 161, 0, 0);
+        jPanel1.add(jButton1, gridBagConstraints);
 
         jButton2.setBackground(new java.awt.Color(51, 153, 0));
         jButton2.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
@@ -94,78 +105,67 @@ public class LandingPage extends javax.swing.JFrame {
                 jButton2ActionPerformed(evt);
             }
         });
-
-        jButton1.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(0, 153, 0));
-        jButton1.setText("Daftar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 102, 0));
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("Universitas Sumatera Utara");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.ipadx = 226;
+        gridBagConstraints.ipady = 29;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(80, 161, 0, 0);
+        jPanel1.add(jButton2, gridBagConstraints);
 
         jLabel4.setFont(new java.awt.Font("Segoe UI Black", 1, 36)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(51, 153, 0));
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel4.setText("SISTEM INVENTARIS");
+        jLabel4.setText("SiUKM");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 452;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(52, 24, 0, 6);
+        jPanel1.add(jLabel4, gridBagConstraints);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(58, 58, 58)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(135, 135, 135)
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel4)
-                .addGap(2, 2, 2)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(68, 68, 68)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(168, Short.MAX_VALUE))
-        );
+        jLabel5.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel5.setText("Mulailah Peminjaman dengan Mudah");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 321;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 24, 0, 6);
+        jPanel1.add(jLabel5, gridBagConstraints);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
+        jLabel6.setFont(new java.awt.Font("Segoe UI Black", 1, 24)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(51, 153, 0));
+        jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel6.setText("Sistem Inventaris UKM");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 292;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 24, 0, 6);
+        jPanel1.add(jLabel6, gridBagConstraints);
+
+        jLabel7.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(0, 102, 0));
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel7.setText("Universitas Sumatera Utara");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 385;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(18, 24, 138, 6);
+        jPanel1.add(jLabel7, gridBagConstraints);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -202,6 +202,8 @@ public class LandingPage extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new LandingPage().setVisible(true));
     }
+    
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
@@ -209,10 +211,10 @@ public class LandingPage extends javax.swing.JFrame {
     private javax.swing.JFrame jFrame1;
     private javax.swing.JFrame jFrame2;
     private javax.swing.JFrame jFrame3;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }
