@@ -2,15 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
 
-package TubesPBOL;
+package com.mycompany.sisteminventarisukm;
 
 /**
  *
  * @author ASUS
  */
-public class SistemInventarisUKM {
+public class Sisteminventarisukm {
 
     public static void main(String[] args) {
-        System.out.println("Tubes PBOL");
+        System.out.println("Hello World!");
     }
 }
