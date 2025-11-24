@@ -158,7 +158,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(30, 214, 0, 0);
         jPanel3.add(jLabel2, gridBagConstraints);
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel5.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -221,7 +221,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(18, 35, 0, 0);
         jPanel3.add(jPanel5, gridBagConstraints);
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel6.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -285,7 +285,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 51);
         jPanel3.add(jPanel6, gridBagConstraints);
 
-        jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel7.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
         jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -348,7 +348,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 35, 55, 0);
         jPanel3.add(jPanel7, gridBagConstraints);
 
-        jPanel8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel8.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
         jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -412,7 +412,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 51);
         jPanel3.add(jPanel8, gridBagConstraints);
 
-        jPanel9.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel9.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel9.setLayout(new java.awt.GridBagLayout());
 
         jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -475,7 +475,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 35, 0, 0);
         jPanel3.add(jPanel9, gridBagConstraints);
 
-        jPanel10.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel10.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
         jLabel18.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -551,7 +551,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSeparator1)
-                    .addComponent(jScrollPane1))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
