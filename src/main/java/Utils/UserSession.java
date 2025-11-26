@@ -11,11 +11,14 @@ public class UserSession {
     private String namaUser;
     private String nim;
     private String email;
+    private String kontak;
     private String role; // "admin" atau "peminjam"
     
     private UserSession() {
         // Private constructor untuk singleton pattern
     }
+
+  
     
     /**
      * Mendapatkan instance UserSession (Singleton)
@@ -26,15 +29,18 @@ public class UserSession {
         }
         return instance;
     }
+
+    
     
     /**
      * Set data user yang login
      */
-    public void setUser(int userId, String namaUser, String nim, String email, String role) {
+    public void setUser(int userId, String namaUser, String nim, String email, String kontak, String role) {
         this.userId = userId;
         this.namaUser = namaUser;
         this.nim = nim;
         this.email = email;
+        this.kontak = kontak;
         this.role = role;
     }
     
@@ -46,6 +52,7 @@ public class UserSession {
         this.namaUser = null;
         this.nim = null;
         this.email = null;
+        this.kontak = null;
         this.role = null;
     }
     
@@ -86,6 +93,10 @@ public class UserSession {
     public String getEmail() {
         return email;
     }
+
+    public String getKontak() {  
+    return kontak;
+}
     
     public String getRole() {
         return role;

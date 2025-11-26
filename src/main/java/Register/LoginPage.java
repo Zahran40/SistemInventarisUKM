@@ -76,11 +76,12 @@ public class LoginPage extends javax.swing.JFrame {
                 String namaUser = rs.getString("nama_user");
                 String nim = rs.getString("NIM");
                 String email = rs.getString("email");
+                String kontak = rs.getString("kontak");
                 String role = rs.getString("role");
                 
                 // Set session
                 UserSession session = UserSession.getInstance();
-                session.setUser(userId, namaUser, nim, email, role);
+                session.setUser(userId, namaUser, nim, email, kontak ,role);
                 
                 // Redirect berdasarkan role
                 if ("admin".equalsIgnoreCase(role)) {
