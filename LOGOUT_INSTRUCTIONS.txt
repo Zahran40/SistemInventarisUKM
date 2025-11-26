@@ -1,0 +1,79 @@
+// Instruksi untuk menambahkan logout handler di file sisanya:
+
+// LogPeminjaman.java - tombol jButton2
+// Setelah line: jButton2.setText("Log Out");
+// Tambahkan:
+jButton2.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton2ActionPerformed(evt);
+    }
+});
+
+// Handler method (sebelum main):
+private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    // Logout
+    Utils.UserSession.getInstance().clearSession();
+    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil logout!");
+    new Register.LoginPage().setVisible(true);
+    this.dispose();
+}//GEN-LAST:event_jButton2ActionPerformed
+
+//====================================================
+
+// RequestPeminjaman.java - tombol jButton4
+// Setelah line: jButton4.setText("Log Out");
+// Tambahkan:
+jButton4.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton4ActionPerformed(evt);
+    }
+});
+
+// Handler method (sebelum main):
+private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    // Logout
+    Utils.UserSession.getInstance().clearSession();
+    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil logout!");
+    new Register.LoginPage().setVisible(true);
+    this.dispose();
+}//GEN-LAST:event_jButton4ActionPerformed
+
+//====================================================
+
+// RequestPengembalian.java - tombol jButton4
+// Setelah line: jButton4.setText("Log Out");
+// Tambahkan:
+jButton4.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton4ActionPerformed(evt);
+    }
+});
+
+// Handler method (sebelum main):
+private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    // Logout
+    Utils.UserSession.getInstance().clearSession();
+    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil logout!");
+    new Register.LoginPage().setVisible(true);
+    this.dispose();
+}//GEN-LAST:event_jButton4ActionPerformed
+
+//====================================================
+
+// ProfilPeminjam.java - tombol jButton6
+// Setelah line: jButton6.setText("Log Out");
+// Tambahkan:
+jButton6.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton6ActionPerformed(evt);
+    }
+});
+
+// Handler method (sebelum main):
+private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+    // Logout
+    Utils.UserSession.getInstance().clearSession();
+    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil logout!");
+    new Register.LoginPage().setVisible(true);
+    this.dispose();
+}//GEN-LAST:event_jButton6ActionPerformed
