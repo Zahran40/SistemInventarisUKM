@@ -25,7 +25,7 @@ public class DashboardAdmin extends javax.swing.JFrame {
      */
     public DashboardAdmin() {
         // Check session dulu
-        checkSession();
+        if (!checkSession()) return; // Jangan lanjutkan jika session tidak valid
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
@@ -34,8 +34,9 @@ public class DashboardAdmin extends javax.swing.JFrame {
     
     /**
      * Method untuk check apakah user sudah login sebagai admin
+     * @return true jika valid, false jika tidak valid
      */
-    private void checkSession() {
+    private boolean checkSession() {
         UserSession session = UserSession.getInstance();
         
         if (!session.isLoggedIn()) {
@@ -45,8 +46,7 @@ public class DashboardAdmin extends javax.swing.JFrame {
                 "Akses Ditolak", 
                 JOptionPane.WARNING_MESSAGE);
             new LoginPage().setVisible(true);
-            this.dispose();
-            return;
+            return false;
         }
         
         if (!session.isAdmin()) {
@@ -56,8 +56,10 @@ public class DashboardAdmin extends javax.swing.JFrame {
                 "Akses Ditolak", 
                 JOptionPane.ERROR_MESSAGE);
             new LoginPage().setVisible(true);
-            this.dispose();
+            return false;
         }
+        
+        return true;
     }
     
     /**
@@ -385,6 +387,11 @@ public class DashboardAdmin extends javax.swing.JFrame {
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("Log Out");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
