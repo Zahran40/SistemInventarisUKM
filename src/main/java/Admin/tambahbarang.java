@@ -3,7 +3,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package Admin;
-
+import Database.DatabaseConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.swing.JOptionPane;
+import javax.swing.DefaultComboBoxModel;
 import Utils.SessionHelper;
 
 /**
@@ -20,6 +27,7 @@ public class tambahbarang extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        loadCategories();
     }
 
     /**
@@ -364,7 +372,61 @@ public class tambahbarang extends javax.swing.JFrame {
     }//GEN-LAST:event_textField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        // 1. Ambil data dari inputan form
+        String namaBarang = textField1.getText();
+        int stok = (int) jSpinner1.getValue();
+        Object selectedCat = jComboBox1.getSelectedItem();
+
+        // 2. Validasi Input (Cek agar tidak kosong/error)
+        if (namaBarang.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama barang tidak boleh kosong!");
+            return;
+        }
+
+        if (stok < 0) {
+            JOptionPane.showMessageDialog(this, "Stok tidak boleh kurang dari 0!");
+            return;
+        }
+
+        // Cek apakah user sudah memilih kategori yang valid
+        if (selectedCat == null || !(selectedCat instanceof CategoryItem)) {
+             JOptionPane.showMessageDialog(this, "Silakan pilih kategori barang!");
+             return;
+        }
+
+        // Ambil ID kategori dari pilihan ComboBox
+        CategoryItem kategori = (CategoryItem) selectedCat;
+        int idKategori = kategori.getId(); 
+
+        // 3. Proses Simpan ke Database
+        Connection conn = DatabaseConnection.getConnection();
+        String sql = "INSERT INTO barang (nama_barang, id_kategori, stok, status) VALUES (?, ?, ?, ?)";
+        
+        try {
+            PreparedStatement pst = conn.prepareStatement(sql);
+            
+            pst.setString(1, namaBarang);      
+            pst.setInt(2, idKategori);         
+            pst.setInt(3, stok);               
+            pst.setString(4, "tersedia");      
+            
+            int rowsInserted = pst.executeUpdate();
+            
+            if (rowsInserted > 0) {
+                JOptionPane.showMessageDialog(this, "Sukses! Barang berhasil disimpan.");
+                
+                // 4. Bersihkan form setelah simpan berhasil
+                textField1.setText("");
+                jSpinner1.setValue(0);
+                if (jComboBox1.getItemCount() > 0) {
+                    jComboBox1.setSelectedIndex(0);
+                }
+            }
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan: " + e.getMessage());
+            System.err.println("Error SQL: " + e.getMessage());
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
@@ -439,4 +501,50 @@ public class tambahbarang extends javax.swing.JFrame {
     private javax.swing.JButton reqpengembalian;
     private java.awt.TextField textField1;
     // End of variables declaration//GEN-END:variables
+    private class CategoryItem {
+        private int id;
+        private String name;
+
+        public CategoryItem(int id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        @Override
+        public String toString() {
+            return name; 
+        }
+    }
+    
+    // Method untuk mengambil data kategori dari database ke ComboBox
+    private void loadCategories() {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            Statement stmt = conn.createStatement();
+
+            String sql = "SELECT id_kategori, nama_kategori FROM kategori_barang"; 
+            
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            
+            while (rs.next()) {
+                int id = rs.getInt("id_kategori");
+                String nama = rs.getString("nama_kategori");
+                // Masukkan object CategoryItem ke dalam model
+                model.addElement(new CategoryItem(id, nama));
+            }
+            
+            // Pasang model ke JComboBox
+            jComboBox1.setModel(model);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Gagal memuat kategori: " + e.getMessage());
+        }
+    }
 }
