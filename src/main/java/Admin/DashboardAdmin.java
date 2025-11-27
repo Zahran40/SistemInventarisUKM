@@ -7,6 +7,10 @@ package Admin;
 import Utils.UserSession;
 import Register.LoginPage;
 import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import Database.DatabaseConnection;
 
 /**
  *
@@ -25,6 +29,7 @@ public class DashboardAdmin extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        loadDataStatistik();
     }
     
     /**
@@ -54,7 +59,51 @@ public class DashboardAdmin extends javax.swing.JFrame {
             this.dispose();
         }
     }
-
+    
+    /**
+     * Method untuk mengambil data statistik dari database
+     * dan menampilkannya ke JLabel dashboard.
+     */
+    private void loadDataStatistik() {
+        Connection conn = DatabaseConnection.getConnection();
+        
+        try {
+            // 1. MENGHITUNG TOTAL STOK (Menjumlahkan kolom 'stok')
+            String sqlStok = "SELECT SUM(stok) AS total_stok FROM barang";
+            PreparedStatement pstStok = conn.prepareStatement(sqlStok);
+            ResultSet rsStok = pstStok.executeQuery();
+            
+            if (rsStok.next()) {
+                // Ambil hasil sum
+                int totalStok = rsStok.getInt("total_stok");
+                // Update jLabel10 (Label Total Stok di GUI Anda)
+                jLabel10.setText(totalStok + " Barang");
+            }
+            
+            // 2. MENGHITUNG TOTAL JENIS BARANG (Menghitung jumlah baris data)
+            String sqlJenis = "SELECT COUNT(*) AS total_jenis FROM barang";
+            PreparedStatement pstJenis = conn.prepareStatement(sqlJenis);
+            ResultSet rsJenis = pstJenis.executeQuery();
+            
+            if (rsJenis.next()) {
+                // Ambil hasil count
+                int totalJenis = rsJenis.getInt("total_jenis");
+                // Update jLabel14 (Label Total Jenis di GUI Anda)
+                jLabel14.setText(totalJenis + " Jenis");
+            }
+            
+            // Tutup result set dan statement untuk membersihkan resource
+            rsStok.close();
+            pstStok.close();
+            rsJenis.close();
+            pstJenis.close();
+            
+        } catch (Exception e) {
+            System.err.println("Gagal memuat data dashboard: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -336,11 +385,6 @@ public class DashboardAdmin extends javax.swing.JFrame {
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("Log Out");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);

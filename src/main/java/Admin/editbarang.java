@@ -3,7 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package Admin;
-
+import Database.DatabaseConnection; // Pastikan ini sesuai lokasi file koneksi Anda
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
 import Utils.SessionHelper;
 
 /**
@@ -15,11 +19,64 @@ public class editbarang extends javax.swing.JFrame {
     /**
      * Creates new form editbarang
      */
+    private void tampilkanData() {
+            // Query ambil data barang (dibatasi 4 baris karena slot GUI terbatas)
+            String sql = "SELECT b.nama_barang, b.status, k.nama_kategori " +
+                     "FROM barang b " +
+                     "JOIN kategori_barang k ON b.id_kategori = k.id_kategori " +
+                     "LIMIT 4";
+            
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement pst = conn.prepareStatement(sql);
+                 ResultSet rs = pst.executeQuery()) {
+
+                // --- SLOT 1 (Panel 5) ---
+                if (rs.next()) {
+                    jLabel3.setText(rs.getString("nama_barang"));
+                    jLabel4.setText("Kategori: " + rs.getString("nama_kategori")); 
+                    jLabel5.setText("Status: " + rs.getString("status"));
+                } else {
+                    // Kosongkan jika data tidak ada
+                    jLabel3.setText("-"); jLabel4.setText("-"); jLabel5.setText("-");
+                }
+
+                // --- SLOT 2 (Panel 6) ---
+                if (rs.next()) {
+                    jLabel6.setText(rs.getString("nama_barang"));
+                    jLabel7.setText("Kategori: " + rs.getString("nama_kategori"));
+                    jLabel8.setText("Status: " + rs.getString("status"));
+                } else {
+                    jLabel6.setText("-"); jLabel7.setText("-"); jLabel8.setText("-");
+                }
+
+                // --- SLOT 3 (Panel 8) ---
+                if (rs.next()) {
+                    jLabel12.setText(rs.getString("nama_barang"));
+                    jLabel13.setText("Kategori: " + rs.getString("nama_kategori"));
+                    jLabel14.setText("Status: " + rs.getString("status"));
+                } else {
+                    jLabel12.setText("-"); jLabel13.setText("-"); jLabel14.setText("-");
+                }
+
+                // --- SLOT 4 (Panel 9) ---
+                if (rs.next()) {
+                    jLabel15.setText(rs.getString("nama_barang"));
+                    jLabel16.setText("Kategori: " + rs.getString("nama_kategori"));
+                    jLabel17.setText("Status: " + rs.getString("status"));
+                } else {
+                    jLabel15.setText("-"); jLabel16.setText("-"); jLabel17.setText("-");
+                }
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Gagal memuat data: " + e.getMessage());
+            }
+    }
     public editbarang() {
         if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        tampilkanData();
     }
 
     /**
@@ -35,24 +92,24 @@ public class editbarang extends javax.swing.JFrame {
         javax.swing.JPanel jPanel4 = new javax.swing.JPanel();
         javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
         javax.swing.JPanel jPanel5 = new javax.swing.JPanel();
-        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         javax.swing.JButton jButton4 = new javax.swing.JButton();
         javax.swing.JPanel jPanel6 = new javax.swing.JPanel();
-        javax.swing.JLabel jLabel6 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel7 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel8 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         javax.swing.JButton jButton5 = new javax.swing.JButton();
         javax.swing.JPanel jPanel8 = new javax.swing.JPanel();
-        javax.swing.JLabel jLabel12 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel13 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel14 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
         javax.swing.JButton jButton7 = new javax.swing.JButton();
         javax.swing.JPanel jPanel9 = new javax.swing.JPanel();
-        javax.swing.JLabel jLabel15 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel16 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel17 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
         javax.swing.JButton jButton8 = new javax.swing.JButton();
         javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
         javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
@@ -439,11 +496,6 @@ public class editbarang extends javax.swing.JFrame {
         jButton6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton6.setForeground(new java.awt.Color(255, 255, 255));
         jButton6.setText("Log Out");
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -617,5 +669,17 @@ public class editbarang extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JLabel jLabel12;
+    javax.swing.JLabel jLabel13;
+    javax.swing.JLabel jLabel14;
+    javax.swing.JLabel jLabel15;
+    javax.swing.JLabel jLabel16;
+    javax.swing.JLabel jLabel17;
+    javax.swing.JLabel jLabel3;
+    javax.swing.JLabel jLabel4;
+    javax.swing.JLabel jLabel5;
+    javax.swing.JLabel jLabel6;
+    javax.swing.JLabel jLabel7;
+    javax.swing.JLabel jLabel8;
     // End of variables declaration//GEN-END:variables
 }
