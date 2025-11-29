@@ -387,11 +387,6 @@ public class DashboardAdmin extends javax.swing.JFrame {
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("Log Out");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -470,12 +465,6 @@ public class DashboardAdmin extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_editbarangActionPerformed
 
-    private void hapusbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hapusbarangActionPerformed
-        // Navigasi ke halaman hapus barang
-        new hapusbarang().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_hapusbarangActionPerformed
-
     private void logpeminjamanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logpeminjamanActionPerformed
         // Navigasi ke halaman log peminjaman
         new LogPeminjaman().setVisible(true);
@@ -509,6 +498,12 @@ public class DashboardAdmin extends javax.swing.JFrame {
         new LoginPage().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void hapusbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hapusbarangActionPerformed
+        // Navigasi ke halaman hapus barang
+        new hapusbarang().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_hapusbarangActionPerformed
 
     /**
      * @param args the command line arguments

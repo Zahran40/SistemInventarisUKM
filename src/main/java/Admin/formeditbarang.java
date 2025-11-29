@@ -4,20 +4,127 @@
  */
 package Admin;
 
+import Database.DatabaseConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+import java.util.HashMap;
 /**
  *
  * @author asus
  */
 public class formeditbarang extends javax.swing.JDialog {
 
+    private String idBarang; // Variabel untuk menyimpan ID yang sedang diedit
+    // Hashmap untuk menyimpan pasangan Nama Kategori -> ID Kategori
+    private HashMap<String, Integer> mapKategori = new HashMap<>();
     /**
      * Creates new form formeditbarang
      */
+    public formeditbarang(java.awt.Frame parent, boolean modal, String id) {
+        super(parent, modal);
+        initComponents();
+        this.idBarang = id;
+        
+        loadKategoriCombo(); // Load pilihan kategori dulu
+        loadDataBarang();    // Baru load data barangnya
+        
+        setLocationRelativeTo(null); // Biar muncul di tengah layar
+    }
+    
+    // Method kosong untuk default constructor (jika diperlukan oleh IDE)
     public formeditbarang(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
+    
+    // 1. Fungsi Load Kategori ke ComboBox
+    private void loadKategoriCombo() {
+        jComboBox1.removeAllItems();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement("SELECT * FROM kategori_barang");
+             ResultSet rs = pst.executeQuery()) {
+            
+            while(rs.next()) {
+                String nama = rs.getString("nama_kategori");
+                int idKat = rs.getInt("id_kategori");
+                
+                jComboBox1.addItem(nama);
+                mapKategori.put(nama, idKat); // Simpan ID-nya di map
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    // 2. Fungsi Load Data Barang Berdasarkan ID
+    private void loadDataBarang() {
+        // Query ambil data barang + nama kategorinya
+        String sql = "SELECT b.*, k.nama_kategori FROM barang b " +
+                     "LEFT JOIN kategori_barang k ON b.id_kategori = k.id_kategori " +
+                     "WHERE b.id_barang = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            
+            pst.setString(1, this.idBarang);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    // Isi Form dengan data dari database
+                    textField2.setText(rs.getString("nama_barang"));
+                    jSpinner1.setValue(rs.getInt("stok"));
+                    
+                    // Set ComboBox Status
+                    String status = rs.getString("status");
+                    jComboBox2.setSelectedItem(status);
+                    
+                    // Set ComboBox Kategori
+                    String namaKategori = rs.getString("nama_kategori");
+                    if (namaKategori != null) {
+                        jComboBox1.setSelectedItem(namaKategori);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal load data: " + e.getMessage());
+        }
+    }
+
+    // 3. Action Button Simpan (Konfirmasi)
+    private void updateData() {
+        String namaBaru = textField2.getText();
+        int stokBaru = (Integer) jSpinner1.getValue();
+        String statusBaru = (String) jComboBox2.getSelectedItem();
+        
+        // Ambil ID Kategori dari Map berdasarkan nama yang dipilih
+        String namaKatDipilih = (String) jComboBox1.getSelectedItem();
+        int idKategoriBaru = mapKategori.getOrDefault(namaKatDipilih, 0);
+
+        if (namaBaru.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama barang tidak boleh kosong!");
+            return;
+        }
+
+        String sql = "UPDATE barang SET nama_barang=?, id_kategori=?, stok=?, status=? WHERE id_barang=?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            
+            pst.setString(1, namaBaru);
+            pst.setInt(2, idKategoriBaru);
+            pst.setInt(3, stokBaru);
+            pst.setString(4, statusBaru);
+            pst.setString(5, this.idBarang);
+            
+            pst.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Data berhasil diupdate!");
+            dispose(); // Tutup dialog setelah berhasil
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal update: " + e.getMessage());
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -80,6 +187,11 @@ public class formeditbarang extends javax.swing.JDialog {
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("Konfirmasi");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -166,6 +278,10 @@ public class formeditbarang extends javax.swing.JDialog {
     private void textField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textField2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_textField2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        updateData();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments

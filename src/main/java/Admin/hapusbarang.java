@@ -4,8 +4,20 @@
  */
 package Admin;
 
+import Database.DatabaseConnection;
 import Utils.SessionHelper;
-
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 /**
  *
  * @author asus
@@ -20,8 +32,141 @@ public class hapusbarang extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        
+        tampilkanData();
     }
+    
+    private void tampilkanData() {
+        // 1. Bersihkan layar dulu
+        panelContainer.removeAll();
 
+        // 2. Set Layout: 2 Kolom, baris otomatis nambah, gap 20px
+        panelContainer.setLayout(new GridLayout(0, 2, 20, 20)); 
+
+        // 3. Query Data
+        String sql = "SELECT b.id_barang, b.nama_barang, b.status, k.nama_kategori " +
+                     "FROM barang b " +
+                     "LEFT JOIN kategori_barang k ON b.id_kategori = k.id_kategori";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+
+            boolean adaData = false;
+
+            while (rs.next()) {
+                adaData = true;
+
+                // Ambil data dari database
+                String id = rs.getString("id_barang");
+                String nama = rs.getString("nama_barang");
+                String kat = rs.getString("nama_kategori");
+                String sts = rs.getString("status");
+
+                if (kat == null) kat = "-";
+
+                // --- MULAI GAMBAR KARTU ---
+                JPanel card = new JPanel();
+                card.setLayout(new GridLayout(4, 1, 5, 5)); // Susunan vertikal
+                card.setBackground(Color.WHITE);
+                
+                // Border Merah tipis untuk menandakan mode hapus
+                card.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(255, 51, 51), 2),
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                ));
+
+                // Label Nama
+                JLabel lblNama = new JLabel(nama);
+                lblNama.setFont(new java.awt.Font("Segoe UI", 1, 16));
+
+                // Label Kategori
+                JLabel lblKat = new JLabel("Kategori: " + kat);
+                lblKat.setForeground(Color.GRAY);
+
+                // Label Status
+                JLabel lblSts = new JLabel("Status: " + sts);
+                if(sts != null && sts.equalsIgnoreCase("Tersedia")) {
+                    lblSts.setForeground(new Color(0, 153, 0)); 
+                } else {
+                    lblSts.setForeground(Color.RED); 
+                }
+
+                // --- TOMBOL HAPUS ---
+                JButton btnHapus = new JButton("Hapus");
+                btnHapus.setBackground(Color.RED);
+                btnHapus.setForeground(Color.WHITE);
+                
+                // Action Listener untuk Hapus
+                btnHapus.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        // 1. Konfirmasi dulu
+                        int jawab = JOptionPane.showConfirmDialog(null, 
+                                "Apakah Anda yakin ingin menghapus barang:\n" + nama + "?", 
+                                "Konfirmasi Hapus", 
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
+                        
+                        if (jawab == JOptionPane.YES_OPTION) {
+                            hapusDataDatabase(id);
+                        }
+                    }
+                });
+
+                // Masukkan komponen ke kartu
+                card.add(lblNama);
+                card.add(lblKat);
+                card.add(lblSts);
+                card.add(btnHapus);
+
+                // Masukkan kartu ke container utama
+                panelContainer.add(card);
+            }
+
+            // Jika data kosong
+            if (!adaData) {
+                JLabel kosong = new JLabel("Tidak ada data barang.");
+                kosong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                jScrollPane1.add(kosong);
+            }
+
+            // Refresh tampilan
+            jScrollPane1.revalidate();
+            jScrollPane1.repaint();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Gagal load data: " + e.getMessage());
+        }
+    }
+    
+    // --- METHOD UNTUK EKSEKUSI DELETE DATABASE ---
+    private void hapusDataDatabase(String idBarang) {
+        String sql = "DELETE FROM barang WHERE id_barang = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            
+            pst.setString(1, idBarang);
+            int rowsAffected = pst.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(this, "Data berhasil dihapus!");
+                tampilkanData(); // Refresh halaman agar item hilang
+            } else {
+                JOptionPane.showMessageDialog(this, "Gagal menghapus data. ID tidak ditemukan.");
+            }
+            
+        } catch (Exception e) {
+            // Cek error foreign key (misal barang sedang dipinjam/ada di tabel lain)
+            if (e.getMessage().contains("foreign key constraint")) {
+                 JOptionPane.showMessageDialog(this, "Gagal! Barang ini tidak bisa dihapus karena masih ada di riwayat peminjaman.");
+            } else {
+                 JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+            }
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -45,26 +190,8 @@ public class hapusbarang extends javax.swing.JFrame {
         jButton6 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jButton4 = new javax.swing.JButton();
-        jPanel6 = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jButton5 = new javax.swing.JButton();
-        jPanel8 = new javax.swing.JPanel();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
-        jButton7 = new javax.swing.JButton();
-        jPanel9 = new javax.swing.JPanel();
-        jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jButton8 = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        panelContainer = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -166,11 +293,6 @@ public class hapusbarang extends javax.swing.JFrame {
         jButton6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton6.setForeground(new java.awt.Color(255, 255, 255));
         jButton6.setText("Log Out");
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -217,269 +339,28 @@ public class hapusbarang extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("DAFTAR BARANG");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 55;
-        gridBagConstraints.ipady = 19;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 171, 0, 0);
-        jPanel4.add(jLabel2, gridBagConstraints);
+        jPanel4.add(jLabel2, new java.awt.GridBagConstraints());
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel5.setLayout(new java.awt.GridBagLayout());
+        javax.swing.GroupLayout panelContainerLayout = new javax.swing.GroupLayout(panelContainer);
+        panelContainer.setLayout(panelContainerLayout);
+        panelContainerLayout.setHorizontalGroup(
+            panelContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 199, Short.MAX_VALUE)
+        );
+        panelContainerLayout.setVerticalGroup(
+            panelContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 291, Short.MAX_VALUE)
+        );
 
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel3.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
-        jPanel5.add(jLabel3, gridBagConstraints);
-
-        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel4.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 7, 0, 0);
-        jPanel5.add(jLabel4, gridBagConstraints);
-
-        jLabel5.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel5.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 73;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 7, 0, 0);
-        jPanel5.add(jLabel5, gridBagConstraints);
-
-        jButton4.setBackground(new java.awt.Color(255, 0, 0));
-        jButton4.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton4.setForeground(new java.awt.Color(255, 255, 255));
-        jButton4.setText("Hapus");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(35, 73, 7, 7);
-        jPanel5.add(jButton4, gridBagConstraints);
+        jScrollPane1.setViewportView(panelContainer);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
-        jPanel4.add(jPanel5, gridBagConstraints);
-
-        jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel6.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
-        jPanel6.add(jLabel6, gridBagConstraints);
-
-        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel7.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel7.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 7, 0, 0);
-        jPanel6.add(jLabel7, gridBagConstraints);
-
-        jLabel8.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel8.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 73;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 7, 0, 0);
-        jPanel6.add(jLabel8, gridBagConstraints);
-
-        jButton5.setBackground(new java.awt.Color(255, 0, 0));
-        jButton5.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton5.setForeground(new java.awt.Color(255, 255, 255));
-        jButton5.setText("Hapus");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(35, 73, 7, 7);
-        jPanel6.add(jButton5, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 3);
-        jPanel4.add(jPanel6, gridBagConstraints);
-
-        jPanel8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel8.setLayout(new java.awt.GridBagLayout());
-
-        jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel12.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
-        jPanel8.add(jLabel12, gridBagConstraints);
-
-        jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel13.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel13.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 7, 0, 0);
-        jPanel8.add(jLabel13, gridBagConstraints);
-
-        jLabel14.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel14.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 73;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 7, 0, 0);
-        jPanel8.add(jLabel14, gridBagConstraints);
-
-        jButton7.setBackground(new java.awt.Color(255, 0, 0));
-        jButton7.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton7.setForeground(new java.awt.Color(255, 255, 255));
-        jButton7.setText("Hapus");
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton7ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(35, 73, 7, 7);
-        jPanel8.add(jButton7, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 58, 3);
-        jPanel4.add(jPanel8, gridBagConstraints);
-
-        jPanel9.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        jPanel9.setLayout(new java.awt.GridBagLayout());
-
-        jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel15.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(7, 7, 0, 0);
-        jPanel9.add(jLabel15, gridBagConstraints);
-
-        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel16.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel16.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 7, 0, 0);
-        jPanel9.add(jLabel16, gridBagConstraints);
-
-        jLabel17.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel17.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 73;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 7, 0, 0);
-        jPanel9.add(jLabel17, gridBagConstraints);
-
-        jButton8.setBackground(new java.awt.Color(255, 0, 0));
-        jButton8.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton8.setForeground(new java.awt.Color(255, 255, 255));
-        jButton8.setText("Hapus");
-        jButton8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton8ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(35, 73, 7, 7);
-        jPanel9.add(jButton8, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 3, 58, 0);
-        jPanel4.add(jPanel9, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(jScrollPane1, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -537,22 +418,6 @@ public class hapusbarang extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_reqpengembalianActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton4ActionPerformed
-
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton5ActionPerformed
-
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton7ActionPerformed
-
-    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton8ActionPerformed
-
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
         new DashboardAdmin().setVisible(true);
         this.dispose();
@@ -606,33 +471,15 @@ public class hapusbarang extends javax.swing.JFrame {
     private javax.swing.JButton addbarang1;
     private javax.swing.JButton editbarang;
     private javax.swing.JButton hapusbarang;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton8;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel8;
-    private javax.swing.JPanel jPanel9;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton logpeminjaman;
+    private javax.swing.JPanel panelContainer;
     private javax.swing.JButton reqpeminjaman;
     private javax.swing.JButton reqpengembalian;
     // End of variables declaration//GEN-END:variables
