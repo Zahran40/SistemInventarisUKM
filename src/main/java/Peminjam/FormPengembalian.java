@@ -57,28 +57,25 @@ public class FormPengembalian extends javax.swing.JDialog {
         headerPanel.add(lblTitle);
 
         String nama = (dataBarang != null) ? dataBarang.getNamaBarang() : "Unknown";
+        int totalPinjam = (dataBarang != null) ? dataBarang.getJumlah() : 0;
+        
         JLabel lblNama = new JLabel("Barang: " + nama);
         lblNama.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblNama.setBounds(30, 80, 300, 20);
         add(lblNama);
         
-        int yPos = 110;
-
-        int totalPinjam = dataBarang.getJumlah();
-        if (totalPinjam > 1) {
-            JLabel lblJml = new JLabel("Jumlah yang dikembalikan:");
-            lblJml.setBounds(30, yPos, 200, 20);
-            add(lblJml);
-            
-            spnJumlah = new javax.swing.JSpinner();
-            spnJumlah.setModel(new javax.swing.SpinnerNumberModel(totalPinjam, 1, totalPinjam, 1)); // Default max
-            spnJumlah.setBounds(240, yPos, 60, 25);
-            add(spnJumlah);
-            
-            yPos += 40;
-        } else {
-            spnJumlah = null; 
-        }
+        JLabel lblJumlah = new JLabel("Jumlah yang dipinjam: " + totalPinjam + " unit");
+        lblJumlah.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblJumlah.setBounds(30, 105, 300, 20);
+        add(lblJumlah);
+        
+        JLabel lblInfo = new JLabel("(Semua barang akan dikembalikan)");
+        lblInfo.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        lblInfo.setForeground(Color.GRAY);
+        lblInfo.setBounds(30, 125, 300, 20);
+        add(lblInfo);
+        
+        int yPos = 155;
 
         JLabel lblInstruksi = new JLabel("Upload foto kondisi barang saat ini:");
         lblInstruksi.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -122,13 +119,13 @@ public class FormPengembalian extends javax.swing.JDialog {
             return;
         }
         
-        int jumlahKembali = 1;
-        if (spnJumlah != null) {
-            jumlahKembali = (int) spnJumlah.getValue();
-        }
+        // Otomatis kembalikan SEMUA yang dipinjam
+        int jumlahKembali = dataBarang.getJumlah();
 
         int confirm = JOptionPane.showConfirmDialog(this, 
-                "Ajukan pengembalian " + jumlahKembali + " unit?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
+                "Ajukan pengembalian " + jumlahKembali + " unit " + dataBarang.getNamaBarang() + "?", 
+                "Konfirmasi", 
+                JOptionPane.YES_NO_OPTION);
         
         if (confirm == JOptionPane.YES_OPTION) {
             PeminjamanDAO dao = new PeminjamanDAO();

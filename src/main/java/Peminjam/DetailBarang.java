@@ -618,21 +618,40 @@ public class DetailBarang extends javax.swing.JFrame {
             }
     
             // 5. Simpan ke Database
-            DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();
-            java.io.File fileBukti = new java.io.File(selectedBuktiName); 
-            boolean sukses = dao.ajukanPeminjaman(idUser, currentIdBarang, jumlahPinjam, catatanUser, fileBukti);
-
-            if (sukses) {
-                // 6. PESAN SUKSES YANG BENAR (Bukan suruh ambil barang)
-                javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Pengajuan Berhasil!\nSilakan cek menu 'Riwayat' untuk melihat status persetujuan Admin.",
-                    "Sukses",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            try {
+                DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();
+                java.io.File fileBukti = new java.io.File(selectedBuktiName);
                 
-                new DashboardPeminjam().setVisible(true);
-                this.dispose(); 
-            } else {
-                javax.swing.JOptionPane.showMessageDialog(this, "Gagal mengajukan peminjaman. Terjadi kesalahan sistem.");
+                // Debug info
+                System.out.println("DEBUG - User ID: " + idUser);
+                System.out.println("DEBUG - Barang ID: " + currentIdBarang);
+                System.out.println("DEBUG - Jumlah: " + jumlahPinjam);
+                System.out.println("DEBUG - File exists: " + fileBukti.exists());
+                System.out.println("DEBUG - File path: " + selectedBuktiName);
+                
+                boolean sukses = dao.ajukanPeminjaman(idUser, currentIdBarang, jumlahPinjam, catatanUser, fileBukti);
+
+                if (sukses) {
+                    // 6. PESAN SUKSES YANG BENAR (Bukan suruh ambil barang)
+                    javax.swing.JOptionPane.showMessageDialog(this, 
+                        "Pengajuan Berhasil!\nSilakan cek menu 'Riwayat' untuk melihat status persetujuan Admin.",
+                        "Sukses",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    
+                    new DashboardPeminjam().setVisible(true);
+                    this.dispose(); 
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(this, 
+                        "Gagal mengajukan peminjaman.\nCek console NetBeans untuk detail error!",
+                        "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Exception: " + ex.getMessage() + "\nCek console untuk detail!",
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnPinjamActionPerformed
