@@ -51,10 +51,12 @@ public class PeminjamanService {
             psUpdateStok.setInt(2, idBarang);
             psUpdateStok.executeUpdate();
             
-            // 3. Cek apakah stok jadi 0, kalau ya ubah status jadi 'dipinjam'
+            // 3. Update status barang berdasarkan stok
+            // - stok = 0 → 'tidak tersedia' (semua dipinjam)
+            // - stok > 0 → 'tersedia' (masih ada stok)
             String sqlUpdateStatus = 
                 "UPDATE barang SET status = CASE " +
-                "WHEN stok = 0 THEN 'dipinjam' " +
+                "WHEN stok = 0 THEN 'tidak tersedia' " +
                 "WHEN stok > 0 THEN 'tersedia' " +
                 "END WHERE id_barang = ?";
             psUpdateStatus = conn.prepareStatement(sqlUpdateStatus);

@@ -179,8 +179,9 @@ public class PeminjamanDAO {
                 psUpdateLama.setInt(2, idPeminjaman);
                 psUpdateLama.executeUpdate();
 
+                // Insert new peminjaman record untuk yang dikembalikan dengan status 'proses'
                 String sqlBaru = "INSERT INTO peminjaman (id_user, id_barang, jumlah, tanggal_pinjam, tanggal_jatuh_tempo, status, keterangan, bukti_validasi) " +
-                                 "VALUES (?, ?, ?, ?, ?, 'request_kembali', ?, ?)";
+                                 "VALUES (?, ?, ?, ?, ?, 'proses', ?, ?)";
                 
                 psInsertBaru = conn.prepareStatement(sqlBaru, java.sql.Statement.RETURN_GENERATED_KEYS);
                 psInsertBaru.setInt(1, idUser);
@@ -199,7 +200,8 @@ public class PeminjamanDAO {
                 }
 
             } else {
-                String sqlUpdate = "UPDATE peminjaman SET status = 'request_kembali' WHERE id_peminjaman = ?";
+                // Full return - set status ke 'proses' untuk menandai sedang dalam proses pengembalian
+                String sqlUpdate = "UPDATE peminjaman SET status = 'proses' WHERE id_peminjaman = ?";
                 psUpdateLama = conn.prepareStatement(sqlUpdate);
                 psUpdateLama.setInt(1, idPeminjaman);
                 psUpdateLama.executeUpdate();

@@ -253,26 +253,44 @@ public class AdminDAO {
         String statusAkhir = keputusan.equals("Setujui") ? "selesai" : "ditolak";
         String sqlUpdate = "UPDATE pengembalian SET status = ? WHERE id_pengembalian = ?";
         String sqlStok = "UPDATE barang SET stok = stok + ? WHERE id_barang = ?";
+        String sqlStatus = "UPDATE barang SET status = CASE " +
+                          "WHEN stok + ? > 0 THEN 'tersedia' " +
+                          "ELSE 'tidak tersedia' " +
+                          "END WHERE id_barang = ?";
 
         try (java.sql.Connection conn = Database.DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             
+            // 1. Update status pengembalian
             java.sql.PreparedStatement ps = conn.prepareStatement(sqlUpdate);
             ps.setString(1, statusAkhir);
             ps.setInt(2, idPengembalian);
             ps.executeUpdate();
+            ps.close();
             
+            // 2. Jika disetujui, kembalikan stok dan update status barang
             if (keputusan.equals("Setujui")) {
+                // Tambah stok
                 java.sql.PreparedStatement ps2 = conn.prepareStatement(sqlStok);
                 ps2.setInt(1, jumlah);
                 ps2.setInt(2, idBarang);
                 ps2.executeUpdate();
+                ps2.close();
                 
+                // Update status barang jadi 'tersedia' karena stok bertambah
+                java.sql.PreparedStatement ps3 = conn.prepareStatement(sqlStatus);
+                ps3.setInt(1, jumlah);
+                ps3.setInt(2, idBarang);
+                ps3.executeUpdate();
+                ps3.close();
             }
             
             conn.commit();
             return true;
-        } catch (Exception e) { return false; }
+        } catch (Exception e) { 
+            e.printStackTrace();
+            return false; 
+        }
     }
     
     public java.io.File getBuktiPengembalian(int idPengembalian) {

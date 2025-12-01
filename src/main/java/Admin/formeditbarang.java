@@ -130,7 +130,7 @@ public class formeditbarang extends javax.swing.JDialog {
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("Stok  :");
 
-        cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tersedia", "Dipinjam" }));
+        cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "tersedia", "tidak tersedia", "dipinjam" }));
 
         btnSimpan.setText("Simpan Perubahan");
         btnSimpan.addActionListener(new java.awt.event.ActionListener() {
@@ -228,7 +228,12 @@ public class formeditbarang extends javax.swing.JDialog {
         String namaBaru = txtNama.getText();
         String katBaru = cmbKategori.getSelectedItem().toString();
         int stokBaru = (int) spnStok.getValue();
-        String statusBaru = cmbStatus.getSelectedItem().toString(); // Pastikan combo status sudah di-rename jadi cmbStatus
+        String statusBaru = cmbStatus.getSelectedItem().toString().toLowerCase(); // Convert ke lowercase
+        
+        // Auto set 'tidak tersedia' jika stok = 0
+        if (stokBaru == 0) {
+            statusBaru = "tidak tersedia";
+        }
         
         // 2. VALIDASI SEDERHANA
         if (namaBaru.trim().isEmpty()) {
