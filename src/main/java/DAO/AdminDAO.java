@@ -286,6 +286,7 @@ public class AdminDAO {
 
     // Proses Konfirmasi Pengembalian
     public boolean prosesPengembalian(int idPengembalian, int idBarang, int jumlah, String keputusan) {
+        System.out.println("=== DEBUG prosesPengembalian START ===");
         System.out.println("DEBUG prosesPengembalian - ID Pengembalian: " + idPengembalian);
         System.out.println("DEBUG prosesPengembalian - ID Barang: " + idBarang);
         System.out.println("DEBUG prosesPengembalian - Jumlah: " + jumlah);
@@ -304,9 +305,18 @@ public class AdminDAO {
                                   "FROM pengembalian pg " +
                                   "JOIN peminjaman p ON pg.id_peminjaman = p.id_peminjaman " +
                                   "WHERE pg.id_pengembalian = ?";
+        
+        java.sql.Connection conn = null;
 
-        try (java.sql.Connection conn = Database.DatabaseConnection.getConnection()) {
+        try {
+            conn = Database.DatabaseConnection.getConnection();
+            if (conn == null) {
+                System.out.println("ERROR: Database connection is NULL!");
+                return false;
+            }
+            
             conn.setAutoCommit(false);
+            System.out.println("DEBUG - Connection established, autocommit=false");
             
             // 1. CEK KETERLAMBATAN DAN CREATE DENDA JIKA TERLAMBAT
             if (keputusan.equals("Setujui")) {
@@ -374,11 +384,35 @@ public class AdminDAO {
             
             conn.commit();
             System.out.println("DEBUG - Transaction COMMITTED successfully!");
+            System.out.println("=== DEBUG prosesPengembalian END (SUCCESS) ===");
             return true;
         } catch (Exception e) { 
-            System.out.println("ERROR prosesPengembalian: " + e.getMessage());
+            System.out.println("=== ERROR prosesPengembalian ===");
+            System.out.println("ERROR Message: " + e.getMessage());
+            System.out.println("ERROR Class: " + e.getClass().getName());
             e.printStackTrace();
-            return false; 
+            
+            // Rollback transaction jika error
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                    System.out.println("Transaction ROLLED BACK");
+                } catch (Exception rollbackEx) {
+                    System.out.println("Rollback error: " + rollbackEx.getMessage());
+                }
+            }
+            
+            return false;
+        } finally {
+            // Close connection
+            if (conn != null) {
+                try {
+                    conn.close();
+                    System.out.println("DEBUG - Connection closed");
+                } catch (Exception closeEx) {
+                    System.out.println("Close connection error: " + closeEx.getMessage());
+                }
+            }
         }
     }
     

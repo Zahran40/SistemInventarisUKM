@@ -109,9 +109,13 @@ public class PeminjamanDAO {
     public java.util.List<Model.RequestData> getRiwayatUser(int idUser) {
         java.util.List<Model.RequestData> list = new java.util.ArrayList<>();
         
-        String sql = "SELECT p.id_peminjaman, b.nama_barang, p.tanggal_pinjam, p.tanggal_jatuh_tempo, p.status, p.jumlah, p.keterangan " +
+        // UPDATE: Join dengan tabel pengembalian untuk dapat status pengembalian
+        String sql = "SELECT p.id_peminjaman, b.nama_barang, p.tanggal_pinjam, p.tanggal_jatuh_tempo, " +
+                     "p.status, p.jumlah, p.keterangan, " +
+                     "pg.status as status_pengembalian, pg.tanggal_kembali " +
                      "FROM peminjaman p " +
                      "JOIN barang b ON p.id_barang = b.id_barang " +
+                     "LEFT JOIN pengembalian pg ON p.id_peminjaman = pg.id_peminjaman " +
                      "WHERE p.id_user = ? " +
                      "ORDER BY p.tanggal_pinjam DESC";
 
@@ -127,7 +131,25 @@ public class PeminjamanDAO {
                     rd.setNamaBarang(rs.getString("nama_barang"));
                     rd.setTanggalPinjam(rs.getDate("tanggal_pinjam"));
                     rd.setTanggalKembali(rs.getDate("tanggal_jatuh_tempo"));
-                    rd.setStatus(rs.getString("status"));
+                    
+                    String statusPeminjaman = rs.getString("status");
+                    String statusPengembalian = rs.getString("status_pengembalian");
+                    
+                    // Logic: Jika ada pengembalian, gunakan status pengembalian
+                    if (statusPengembalian != null && !statusPengembalian.isEmpty()) {
+                        // Status pengembalian lebih prioritas
+                        if ("selesai".equalsIgnoreCase(statusPengembalian)) {
+                            rd.setStatus("dikembalikan"); // Status untuk tampilan user
+                        } else if ("ditolak".equalsIgnoreCase(statusPengembalian)) {
+                            rd.setStatus("pengembalian_ditolak"); // Ditolak admin
+                        } else {
+                            rd.setStatus("proses_pengembalian"); // Sedang diproses
+                        }
+                    } else {
+                        // Gunakan status peminjaman
+                        rd.setStatus(statusPeminjaman);
+                    }
+                    
                     rd.setJumlah(rs.getInt("jumlah"));
                     rd.setKeterangan(rs.getString("keterangan"));
                     
@@ -135,6 +157,7 @@ public class PeminjamanDAO {
                 }
             }
         } catch (java.sql.SQLException e) {
+            System.out.println("ERROR getRiwayatUser: " + e.getMessage());
             e.printStackTrace();
         }
         return list;

@@ -105,11 +105,18 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         } else if ("ditolak".equalsIgnoreCase(status)) {
             lblStatus.setForeground(java.awt.Color.RED);
         } else if ("dikembalikan".equalsIgnoreCase(status)) {
-            lblStatus.setForeground(java.awt.Color.BLUE); // 
+            lblStatus.setText("DIKEMBALIKAN");
+            lblStatus.setForeground(java.awt.Color.BLUE);
+        } else if ("pengembalian_ditolak".equalsIgnoreCase(status)) {
+            lblStatus.setText("PENGEMBALIAN DITOLAK");
+            lblStatus.setForeground(java.awt.Color.RED);
+        } else if ("proses_pengembalian".equalsIgnoreCase(status)) {
+            lblStatus.setText("PROSES KEMBALI");
+            lblStatus.setForeground(java.awt.Color.ORANGE);
         } else {
             lblStatus.setForeground(java.awt.Color.ORANGE);
         }
-        lblStatus.setBounds(470, 17, 100, 20);
+        lblStatus.setBounds(470, 17, 150, 20);
         panel.add(lblStatus);
         
         javax.swing.JLabel lblDenda = new javax.swing.JLabel("-");
@@ -294,7 +301,7 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
 
         jLabel3.setBackground(new java.awt.Color(0, 0, 0));
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel3.setText("RIWAYAT PEMINJAMAN");
+        jLabel3.setText("RIWAYAT PEMINJAMAN DAN PENGEMBALIAN");
 
         javax.swing.GroupLayout panelRiwayatContainerLayout = new javax.swing.GroupLayout(panelRiwayatContainer);
         panelRiwayatContainer.setLayout(panelRiwayatContainerLayout);
