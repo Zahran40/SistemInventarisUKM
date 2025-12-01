@@ -3,6 +3,7 @@ C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\editbarang
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\formeditbarang.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\hapusbarang.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\LogPeminjaman.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\ManajemenDenda.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\RequestPeminjaman.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\RequestPengembalian.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\tambahbarang.java
@@ -13,8 +14,10 @@ C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\DAO\PeminjamanDA
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Database\DatabaseConnection.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\editbarang\java.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\Barang.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\Denda.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\LogData.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\RequestData.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DashboardDenda.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DashboardPeminjam.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DetailBarang.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DetailRiwayat.java
@@ -23,6 +26,7 @@ C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\lblKate
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\ProfilPeminjam.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\RiwayatPeminjam.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Register\LoginPage.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Service\DendaService.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Service\PeminjamanService.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Utils\FileUploadValidator.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Utils\NavigationHelper.java

@@ -119,7 +119,7 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         if ("disetujui".equalsIgnoreCase(status)) {
             Service.DendaService dendaService = new Service.DendaService();
             java.util.List<Model.Denda> listDenda = dendaService.getDendaByUser(
-                Session.UserSession.getInstance().getUserId()
+                Utils.UserSession.getInstance().getUserId()
             );
             
             // Cari denda untuk peminjaman ini

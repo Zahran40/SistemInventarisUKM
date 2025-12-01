@@ -1,6 +1,6 @@
 package Peminjam;
 
-import Session.UserSession;
+import Utils.UserSession;
 import Service.DendaService;
 import Model.Denda;
 import javax.swing.*;
