@@ -40,6 +40,9 @@ public class DetailBarang extends javax.swing.JFrame {
         initComponents();
         this.currentIdBarang = id; 
         
+        // Set fullscreen
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+        
         tampilkanDetail(); 
     }
     
@@ -627,8 +630,9 @@ public class DetailBarang extends javax.swing.JFrame {
         // 1. File Chooser
         JFileChooser fileChooser = new JFileChooser();
         
-        // 2. Filter hanya file gambar
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Gambar (JPG & PNG)", "jpg", "png", "jpeg");
+        // 2. Filter file gambar dan PDF
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+            "Bukti (PNG, JPG, PDF)", "jpg", "png", "jpeg", "pdf");
         fileChooser.setFileFilter(filter);
         
         // 3. Tampilkan Dialog
@@ -637,6 +641,18 @@ public class DetailBarang extends javax.swing.JFrame {
         // 4. Jika user memilih file
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
+            
+            // VALIDASI FILE DENGAN OOP
+            Utils.FileUploadValidator.ValidationResult validationResult = 
+                Utils.FileUploadValidator.validate(selectedFile);
+            
+            if (!validationResult.isValid()) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    validationResult.getMessage(), 
+                    "File Tidak Valid", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             
             // Simpan nama file ke variabel global
             this.selectedBuktiName = selectedFile.getAbsolutePath();

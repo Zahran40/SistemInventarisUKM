@@ -182,11 +182,34 @@ public class RequestPeminjaman extends javax.swing.JFrame {
                     "Proses " + keputusan + "?", "Konfirmasi", javax.swing.JOptionPane.YES_NO_OPTION);
             
             if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-                DAO.AdminDAO dao = new DAO.AdminDAO();
-                boolean sukses = dao.prosesPeminjaman(rd.getIdPeminjaman(), rd.getIdBarang(), rd.getJumlah(), keputusan);
+                // GUNAKAN SERVICE LAYER UNTUK BUSINESS LOGIC (OOP PRINCIPLE)
+                Service.PeminjamanService peminjamanService = new Service.PeminjamanService();
+                boolean sukses = false;
+                
+                if (keputusan.equals("Setujui")) {
+                    // Approve dan otomatis update stok + status barang
+                    sukses = peminjamanService.approvePeminjamanDanUpdateStok(
+                        rd.getIdPeminjaman(), 
+                        rd.getIdBarang(), 
+                        rd.getJumlah()
+                    );
+                } else if (keputusan.equals("Tolak")) {
+                    // Reject peminjaman
+                    sukses = peminjamanService.rejectPeminjaman(rd.getIdPeminjaman());
+                }
+                
                 if (sukses) {
-                    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil!");
+                    javax.swing.JOptionPane.showMessageDialog(this, 
+                        "Request berhasil diproses!\n" + 
+                        (keputusan.equals("Setujui") ? "Stok barang telah dikurangi." : ""), 
+                        "Sukses", 
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
                     loadDaftarRequest(); 
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(this, 
+                        "Gagal memproses request. Coba lagi.", 
+                        "Error", 
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
