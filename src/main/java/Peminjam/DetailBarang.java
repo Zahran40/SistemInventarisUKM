@@ -617,7 +617,21 @@ public class DetailBarang extends javax.swing.JFrame {
                 return;
             }
     
-            // 5. Simpan ke Database
+            // 5. CEK DENDA BELUM BAYAR (BLOCKING SYSTEM)
+            Service.DendaService dendaService = new Service.DendaService();
+            int totalDenda = dendaService.getTotalDendaBelumBayar(idUser);
+            
+            if (totalDenda > 0) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Anda tidak dapat meminjam barang!\n" +
+                    "Anda memiliki denda yang belum dibayar: " + String.format("Rp %,d", totalDenda) + "\n\n" +
+                    "Silakan hubungi admin untuk melunasi denda terlebih dahulu.",
+                    "Peminjaman Diblokir",
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // 6. Simpan ke Database
             try {
                 DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();
                 java.io.File fileBukti = new java.io.File(selectedBuktiName);
@@ -632,7 +646,7 @@ public class DetailBarang extends javax.swing.JFrame {
                 boolean sukses = dao.ajukanPeminjaman(idUser, currentIdBarang, jumlahPinjam, catatanUser, fileBukti);
 
                 if (sukses) {
-                    // 6. PESAN SUKSES YANG BENAR (Bukan suruh ambil barang)
+                    // 7. PESAN SUKSES YANG BENAR (Bukan suruh ambil barang)
                     javax.swing.JOptionPane.showMessageDialog(this, 
                         "Pengajuan Berhasil!\nSilakan cek menu 'Riwayat' untuk melihat status persetujuan Admin.",
                         "Sukses",

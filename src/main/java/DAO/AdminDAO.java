@@ -257,18 +257,49 @@ public class AdminDAO {
                           "WHEN stok + ? > 0 THEN 'tersedia' " +
                           "ELSE 'tidak tersedia' " +
                           "END WHERE id_barang = ?";
+        
+        // Query untuk cek keterlambatan
+        String sqlGetPeminjaman = "SELECT pg.id_peminjaman, pg.id_user, p.tanggal_jatuh_tempo " +
+                                  "FROM pengembalian pg " +
+                                  "JOIN peminjaman p ON pg.id_peminjaman = p.id_peminjaman " +
+                                  "WHERE pg.id_pengembalian = ?";
 
         try (java.sql.Connection conn = Database.DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false);
             
-            // 1. Update status pengembalian
+            // 1. CEK KETERLAMBATAN DAN CREATE DENDA JIKA TERLAMBAT
+            if (keputusan.equals("Setujui")) {
+                java.sql.PreparedStatement psCheck = conn.prepareStatement(sqlGetPeminjaman);
+                psCheck.setInt(1, idPengembalian);
+                java.sql.ResultSet rs = psCheck.executeQuery();
+                
+                if (rs.next()) {
+                    int idPeminjaman = rs.getInt("id_peminjaman");
+                    int idUser = rs.getInt("id_user");
+                    java.sql.Date tanggalJatuhTempo = rs.getDate("tanggal_jatuh_tempo");
+                    
+                    // Cek apakah telat
+                    Service.DendaService dendaService = new Service.DendaService();
+                    Model.Denda denda = dendaService.hitungDenda(idPeminjaman);
+                    
+                    if (denda != null) {
+                        // Ada keterlambatan, simpan denda
+                        dendaService.simpanDenda(denda);
+                        System.out.println("DENDA CREATED: " + denda.getJumlahDendaFormatted() + 
+                                         " untuk user ID " + idUser);
+                    }
+                }
+                psCheck.close();
+            }
+            
+            // 2. Update status pengembalian
             java.sql.PreparedStatement ps = conn.prepareStatement(sqlUpdate);
             ps.setString(1, statusAkhir);
             ps.setInt(2, idPengembalian);
             ps.executeUpdate();
             ps.close();
             
-            // 2. Jika disetujui, kembalikan stok dan update status barang
+            // 3. Jika disetujui, kembalikan stok dan update status barang
             if (keputusan.equals("Setujui")) {
                 // Tambah stok
                 java.sql.PreparedStatement ps2 = conn.prepareStatement(sqlStok);

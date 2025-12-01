@@ -115,10 +115,21 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         javax.swing.JLabel lblDenda = new javax.swing.JLabel("-");
         lblDenda.setFont(fontIsi);
         
-        if ("disetujui".equalsIgnoreCase(status) && item.getTanggalKembali() != null) {
-            if (new java.util.Date().after(item.getTanggalKembali())) {
-                lblDenda.setText("Rp 50.000");
-                lblDenda.setForeground(java.awt.Color.RED);
+        // CEK DENDA DARI DATABASE (bukan hardcoded lagi!)
+        if ("disetujui".equalsIgnoreCase(status)) {
+            Service.DendaService dendaService = new Service.DendaService();
+            java.util.List<Model.Denda> listDenda = dendaService.getDendaByUser(
+                Session.UserSession.getInstance().getUserId()
+            );
+            
+            // Cari denda untuk peminjaman ini
+            for (Model.Denda denda : listDenda) {
+                if (denda.getIdPeminjaman() == item.getIdPeminjaman() && 
+                    "belum_bayar".equalsIgnoreCase(denda.getStatusBayar())) {
+                    lblDenda.setText(denda.getJumlahDendaFormatted());
+                    lblDenda.setForeground(java.awt.Color.RED);
+                    break;
+                }
             }
         }
         lblDenda.setBounds(580, 17, 80, 20);
