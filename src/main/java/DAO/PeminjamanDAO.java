@@ -17,18 +17,14 @@ public class PeminjamanDAO {
     public boolean ajukanPeminjaman(int idUser, int idBarang, int jumlah, String keterangan, java.io.File fileBukti) {
         Connection conn = null;
         PreparedStatement psInsert = null;
-        PreparedStatement psUpdateStok = null;
 
-        // Query 1: Insert data (Perhatikan ada kolom bukti_validasi)
+        // Query: Insert data peminjaman dengan status 'proses' (belum approved)
+        // STOK TIDAK DIKURANGI DI SINI, tapi saat admin approve di PeminjamanService
         String sqlInsert = "INSERT INTO peminjaman (id_user, id_barang, jumlah, tanggal_pinjam, tanggal_jatuh_tempo, status, keterangan, bukti_validasi) " +
                            "VALUES (?, ?, ?, ?, ?, 'proses', ?, ?)";
 
-        // Query 2: Kurangi stok
-        String sqlUpdate = "UPDATE barang SET stok = stok - ? WHERE id_barang = ?";
-
         try {
             conn = DatabaseConnection.getConnection();
-            conn.setAutoCommit(false); // Transaksi
 
             // Insert Peminjaman
             psInsert = conn.prepareStatement(sqlInsert);
@@ -38,39 +34,33 @@ public class PeminjamanDAO {
             psInsert.setDate(4, Date.valueOf(LocalDate.now())); 
             psInsert.setDate(5, Date.valueOf(LocalDate.now().plusDays(7)));
             psInsert.setString(6, keterangan);
-            psInsert.setString(6, keterangan);
 
-            if (fileBukti != null) {
+            // Set bukti validasi (file gambar/pdf)
+            if (fileBukti != null && fileBukti.exists()) {
                 try {
                     java.io.FileInputStream fis = new java.io.FileInputStream(fileBukti);
                     psInsert.setBinaryStream(7, fis, (int) fileBukti.length());
                 } catch (java.io.FileNotFoundException ex) {
+                    ex.printStackTrace();
                     psInsert.setNull(7, java.sql.Types.BLOB);
                 }
             } else {
                 psInsert.setNull(7, java.sql.Types.BLOB);
             }
             
-            psInsert.executeUpdate();
-            
-            // Kurangi Stok 
-            psUpdateStok = conn.prepareStatement(sqlUpdate);
-            psUpdateStok.setInt(1, jumlah);
-            psUpdateStok.setInt(2, idBarang);
-            psUpdateStok.executeUpdate();
-
-            conn.commit();
-            return true;
+            int rowsAffected = psInsert.executeUpdate();
+            return rowsAffected > 0;
 
         } catch (SQLException e) {
-            if (conn != null) { try { conn.rollback(); } catch (SQLException ex) {} }
             e.printStackTrace();
             return false;
         } finally {
             try {
                 if (psInsert != null) psInsert.close();
-                if (psUpdateStok != null) psUpdateStok.close();
-            } catch (SQLException e) {}
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
     

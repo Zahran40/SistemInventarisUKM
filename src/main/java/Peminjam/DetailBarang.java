@@ -603,8 +603,19 @@ public class DetailBarang extends javax.swing.JFrame {
             javax.swing.JOptionPane.YES_NO_OPTION);
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-            // ID User (Sementara Hardcode 2, nanti ganti SessionHelper.getUserId())
-            int idUser = 2; 
+            // ID User dari session yang login
+            int idUser = Utils.UserSession.getInstance().getUserId();
+            
+            // Validasi session
+            if (idUser == 0) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Session tidak valid! Silakan login ulang.", 
+                    "Error Session", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                new Register.LoginPage().setVisible(true);
+                this.dispose();
+                return;
+            }
     
             // 5. Simpan ke Database
             DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();

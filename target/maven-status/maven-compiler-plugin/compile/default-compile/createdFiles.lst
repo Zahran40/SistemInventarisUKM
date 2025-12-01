@@ -20,6 +20,7 @@ Admin\tambahbarang$12.class
 Peminjam\DashboardPeminjam$1.class
 Admin\hapusbarang$12.class
 Admin\RequestPengembalian$1.class
+Utils\FileUploadValidator.class
 Admin\RequestPengembalian$4.class
 Peminjam\DashboardPeminjam.class
 Peminjam\RiwayatPeminjam$1.class
@@ -72,11 +73,13 @@ Admin\formeditbarang.class
 Admin\RequestPengembalian$5.class
 Admin\tambahbarang.class
 Admin\hapusbarang$11.class
+Service\PeminjamanService.class
 Admin\tambahbarang$6.class
 Register\LoginPage$1.class
 Peminjam\ProfilPeminjam$1.class
 DAO\AdminDAO.class
 Model\LogData.class
+Utils\FileUploadValidator$ValidationResult.class
 Admin\editbarang$7.class
 Register\LoginPage$4.class
 Admin\tambahbarang$9.class
