@@ -29,7 +29,12 @@ public class DashboardAdmin extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        
+        // Gunakan loadDataStatistik (dari HEAD) yang lebih detail
         loadDataStatistik();
+        // Note: loadDashboardData dari aldrik menggunakan DAO.AdminDAO
+        // loadDataStatistik dari HEAD menggunakan query langsung
+        // Kita pilih yang dari HEAD karena sudah ada
     }
     
     /**

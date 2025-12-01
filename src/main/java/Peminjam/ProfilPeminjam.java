@@ -6,6 +6,11 @@ package Peminjam;
 
 import Utils.SessionHelper;
 import Utils.UserSession;
+import DAO.PeminjamanDAO;
+import Model.RequestData;
+import java.util.List;
+import java.util.Date;
+import java.awt.Color;
 
 /**
  *
@@ -22,9 +27,10 @@ public class ProfilPeminjam extends javax.swing.JFrame {
         if (!SessionHelper.checkPeminjam(this)) return;
         initComponents();
         setLocationRelativeTo(null);
-        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
 
-        MuatDataProfil();
+        MuatDataProfil();        
+        loadStatistikPeminjaman();
     }
 
     private void MuatDataProfil() {
@@ -44,6 +50,19 @@ public class ProfilPeminjam extends javax.swing.JFrame {
         // Data dummy untuk total peminjaman dan barang yang sedang dipinjam
         jLabel29.setText(".... kali");
         jLabel30.setText(".... barang");
+    }  
+    
+    private void loadStatistikPeminjaman() {
+        int idUser = 2; 
+
+        DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();
+        java.util.List<Model.RequestData> listDipinjam = dao.getPeminjamanAktif(idUser);
+        
+        int jumlahBarang = listDipinjam.size();
+        jLabel30.setText(jumlahBarang + " Barang");
+        
+        int totalHistory = dao.hitungTotalRiwayat(idUser);
+        jLabel29.setText(totalHistory + " Kali");
     }
 
     /**
@@ -376,7 +395,7 @@ public class ProfilPeminjam extends javax.swing.JFrame {
                         .addComponent(jSeparator1)
                         .addGap(7, 7, 7))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 729, Short.MAX_VALUE)
                         .addContainerGap())))
             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

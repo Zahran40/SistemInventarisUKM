@@ -7,6 +7,16 @@ package Peminjam;
 import Utils.UserSession;
 import Register.LoginPage;
 import javax.swing.JOptionPane;
+import Model.Barang;
+import DAO.BarangDAO;
+import java.util.List;
+import java.awt.GridLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+import javax.swing.BorderFactory;
 
 /**
  *
@@ -20,11 +30,117 @@ public class DashboardPeminjam extends javax.swing.JFrame {
      * Creates new form DashboardPeminjam
      */
     public DashboardPeminjam() {
-        // Check session dulu
-        if (!checkSession()) return; // Jangan lanjutkan jika session tidak valid
+        // Check session
+        if (!checkSession()) return; 
         initComponents();
+        isiComboBoxKategori();
+        loadDataBarang("", "Semua");
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+    }
+    
+    // Panggil method ini di Constructor: loadDataBarang("", "Semua");
+    private void loadDataBarang(String keyword, String kategori) {
+        // 1. Ambil data pakai DAO yang baru (filter)
+        DAO.BarangDAO dao = new DAO.BarangDAO();
+        List<Barang> data = dao.filterBarang(keyword, kategori);
+        
+        // 2. Bersihkan Panel
+        panelDaftarBarang.removeAll();
+        
+        // 3. Setup Layout Grid
+        int rows = (int) Math.ceil(data.size() / 2.0);
+        if (rows < 1) rows = 1;
+        
+        panelDaftarBarang.setLayout(new java.awt.GridLayout(rows, 2, 15, 15));
+        panelDaftarBarang.setBackground(new java.awt.Color(102, 204, 0)); // Sesuaikan warna background
+
+        // 4. Looping Kartu
+        for (Barang b : data) {
+            JPanel card = createCard(b);
+            panelDaftarBarang.add(card);
+        }
+
+        // 5. Refresh UI (PENTING)
+        panelDaftarBarang.revalidate();
+        panelDaftarBarang.repaint();
+    }
+    
+    private void isiComboBoxKategori() {
+        // 1. Kosongkan dulu isi combo box (hapus "Item 1", "Item 2" bawaan)
+        cmbKategori.removeAllItems();
+        
+        // 2. Tambahkan pilihan default "Semua"
+        cmbKategori.addItem("Semua");
+        
+        // 3. Ambil data asli dari Database lewat DAO
+        DAO.BarangDAO dao = new DAO.BarangDAO();
+        List<String> daftarKategori = dao.getNamaKategori();
+        
+        // 4. Masukkan satu per satu ke Combo Box
+        for (String namaKat : daftarKategori) {
+            cmbKategori.addItem(namaKat);
+        }
+    }
+    
+    private javax.swing.JPanel createCard(Model.Barang b) {
+        javax.swing.JPanel panel = new javax.swing.JPanel();
+        panel.setLayout(null);
+        panel.setPreferredSize(new java.awt.Dimension(300, 150));
+        panel.setBackground(new java.awt.Color(64, 64, 64)); 
+        panel.setBorder(null);
+
+        // 1. Label Nama Barang
+        javax.swing.JLabel lblNama = new javax.swing.JLabel(b.getNama());
+        lblNama.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        lblNama.setForeground(java.awt.Color.WHITE);
+        lblNama.setBounds(15, 15, 190, 25);
+        panel.add(lblNama);
+
+        // 2. Label Status
+        javax.swing.JLabel lblStatus = new javax.swing.JLabel(b.getStatus());
+        lblStatus.setFont(new java.awt.Font("Segoe UI", 0, 12));
+        if ("tersedia".equalsIgnoreCase(b.getStatus())) {
+            lblStatus.setForeground(new java.awt.Color(51, 255, 51)); // Hijau
+        } else {
+            lblStatus.setForeground(java.awt.Color.RED); // Merah
+        }
+        lblStatus.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblStatus.setBounds(210, 15, 70, 25);
+        panel.add(lblStatus);
+
+        // 3. Label Kategori
+        javax.swing.JLabel lblKategori = new javax.swing.JLabel(b.getNamaKategori());
+        lblKategori.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        lblKategori.setForeground(new java.awt.Color(102, 204, 0)); // Hijau Olive
+        lblKategori.setBounds(15, 45, 200, 20);
+        panel.add(lblKategori);
+
+        // 4. Label Stok
+        javax.swing.JLabel lblStok = new javax.swing.JLabel("Stok: " + b.getStok());
+        lblStok.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        lblStok.setForeground(java.awt.Color.WHITE);
+        lblStok.setBounds(15, 100, 100, 30);
+        panel.add(lblStok);
+
+        // 5. TOMBOL DETAIL (BAGIAN PENTING)
+        javax.swing.JButton btnDetail = new javax.swing.JButton("Detail");
+        btnDetail.setBounds(190, 100, 90, 30);
+        btnDetail.setBackground(new java.awt.Color(51, 153, 0));
+        btnDetail.setForeground(java.awt.Color.WHITE);
+        btnDetail.setFocusPainted(false);
+        btnDetail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                // Saat diklik, buka DetailBarang dengan membawa ID barang ini
+                new Peminjam.DetailBarang(b.getId()).setVisible(true);
+                
+                // Opsional: Tutup dashboard saat ini agar tidak menumpuk
+                dispose(); 
+            }
+        });
+        
+        panel.add(btnDetail);
+        return panel;
     }
     
     /**
@@ -78,42 +194,15 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
+        txtSearch = new javax.swing.JTextField();
+        cmbKategori = new javax.swing.JComboBox<>();
+        panelDaftarBarang = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jButton4 = new javax.swing.JButton();
         jLabel21 = new javax.swing.JLabel();
-        jPanel11 = new javax.swing.JPanel();
-        jLabel22 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jButton10 = new javax.swing.JButton();
-        jLabel25 = new javax.swing.JLabel();
-        jPanel12 = new javax.swing.JPanel();
-        jLabel26 = new javax.swing.JLabel();
-        jLabel27 = new javax.swing.JLabel();
-        jLabel28 = new javax.swing.JLabel();
-        jButton11 = new javax.swing.JButton();
-        jLabel29 = new javax.swing.JLabel();
-        jPanel6 = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jButton5 = new javax.swing.JButton();
-        jLabel30 = new javax.swing.JLabel();
-        jPanel13 = new javax.swing.JPanel();
-        jLabel31 = new javax.swing.JLabel();
-        jLabel32 = new javax.swing.JLabel();
-        jLabel33 = new javax.swing.JLabel();
-        jButton12 = new javax.swing.JButton();
-        jLabel34 = new javax.swing.JLabel();
-        jPanel7 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        jButton6 = new javax.swing.JButton();
-        jLabel35 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
@@ -193,18 +282,39 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("DAFTAR BARANG");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 55;
-        gridBagConstraints.ipady = 19;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(19, 202, 0, 0);
-        jPanel3.add(jLabel2, gridBagConstraints);
+        jPanel3.add(jLabel2, new java.awt.GridBagConstraints());
 
-        jPanel5.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel5.setLayout(new java.awt.GridBagLayout());
+        txtSearch.setText("Cari Nama Barang");
+        txtSearch.setMaximumSize(new java.awt.Dimension(200, 30));
+        txtSearch.setMinimumSize(new java.awt.Dimension(200, 30));
+        txtSearch.setPreferredSize(new java.awt.Dimension(200, 30));
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchActionPerformed(evt);
+            }
+        });
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtSearchKeyReleased(evt);
+            }
+        });
+        jPanel3.add(txtSearch, new java.awt.GridBagConstraints());
+
+        cmbKategori.setMinimumSize(new java.awt.Dimension(100, 30));
+        cmbKategori.setPreferredSize(new java.awt.Dimension(100, 30));
+        cmbKategori.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cmbKategoriItemStateChanged(evt);
+            }
+        });
+        cmbKategori.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbKategoriActionPerformed(evt);
+            }
+        });
+        jPanel3.add(cmbKategori, new java.awt.GridBagConstraints());
+
+        panelDaftarBarang.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel3.setText("Nama Barang");
@@ -216,7 +326,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipady = -1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
-        jPanel5.add(jLabel3, gridBagConstraints);
+        panelDaftarBarang.add(jLabel3, gridBagConstraints);
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(51, 153, 0));
@@ -229,7 +339,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 8, 0, 0);
-        jPanel5.add(jLabel4, gridBagConstraints);
+        panelDaftarBarang.add(jLabel4, gridBagConstraints);
 
         jLabel5.setForeground(new java.awt.Color(51, 153, 0));
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -242,7 +352,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 101, 0, 7);
-        jPanel5.add(jLabel5, gridBagConstraints);
+        panelDaftarBarang.add(jLabel5, gridBagConstraints);
 
         jButton4.setBackground(new java.awt.Color(0, 153, 0));
         jButton4.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
@@ -260,7 +370,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipady = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(30, 67, 7, 7);
-        jPanel5.add(jButton4, gridBagConstraints);
+        panelDaftarBarang.add(jButton4, gridBagConstraints);
 
         jLabel21.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
         jLabel21.setText("Stok");
@@ -271,402 +381,15 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipady = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(29, 7, 0, 0);
-        jPanel5.add(jLabel21, gridBagConstraints);
+        panelDaftarBarang.add(jLabel21, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 44, 0, 0);
-        jPanel3.add(jPanel5, gridBagConstraints);
-
-        jPanel11.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel11.setLayout(new java.awt.GridBagLayout());
-
-        jLabel22.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel22.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
-        jPanel11.add(jLabel22, gridBagConstraints);
-
-        jLabel23.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel23.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel23.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 8, 0, 0);
-        jPanel11.add(jLabel23, gridBagConstraints);
-
-        jLabel24.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel24.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel24.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipadx = 6;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 101, 0, 7);
-        jPanel11.add(jLabel24, gridBagConstraints);
-
-        jButton10.setBackground(new java.awt.Color(0, 153, 0));
-        jButton10.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton10.setForeground(new java.awt.Color(255, 255, 255));
-        jButton10.setText("Detail");
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(30, 67, 7, 7);
-        jPanel11.add(jButton10, gridBagConstraints);
-
-        jLabel25.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel25.setText("Stok");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.ipadx = 83;
-        gridBagConstraints.ipady = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(29, 7, 0, 0);
-        jPanel11.add(jLabel25, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 6, 0, 52);
-        jPanel3.add(jPanel11, gridBagConstraints);
-
-        jPanel12.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel12.setLayout(new java.awt.GridBagLayout());
-
-        jLabel26.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel26.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
-        jPanel12.add(jLabel26, gridBagConstraints);
-
-        jLabel27.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel27.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel27.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 8, 0, 0);
-        jPanel12.add(jLabel27, gridBagConstraints);
-
-        jLabel28.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel28.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel28.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipadx = 6;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 101, 0, 7);
-        jPanel12.add(jLabel28, gridBagConstraints);
-
-        jButton11.setBackground(new java.awt.Color(0, 153, 0));
-        jButton11.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton11.setForeground(new java.awt.Color(255, 255, 255));
-        jButton11.setText("Detail");
-        jButton11.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton11ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(30, 67, 7, 7);
-        jPanel12.add(jButton11, gridBagConstraints);
-
-        jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel29.setText("Stok");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.ipadx = 83;
-        gridBagConstraints.ipady = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(29, 7, 0, 0);
-        jPanel12.add(jLabel29, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 52);
-        jPanel3.add(jPanel12, gridBagConstraints);
-
-        jPanel6.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel6.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
-        jPanel6.add(jLabel6, gridBagConstraints);
-
-        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel7.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel7.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 8, 0, 0);
-        jPanel6.add(jLabel7, gridBagConstraints);
-
-        jLabel8.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel8.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipadx = 6;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 101, 0, 7);
-        jPanel6.add(jLabel8, gridBagConstraints);
-
-        jButton5.setBackground(new java.awt.Color(0, 153, 0));
-        jButton5.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton5.setForeground(new java.awt.Color(255, 255, 255));
-        jButton5.setText("Detail");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(30, 67, 7, 7);
-        jPanel6.add(jButton5, gridBagConstraints);
-
-        jLabel30.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel30.setText("Stok");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.ipadx = 83;
-        gridBagConstraints.ipady = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(29, 7, 0, 0);
-        jPanel6.add(jLabel30, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 44, 0, 0);
-        jPanel3.add(jPanel6, gridBagConstraints);
-
-        jPanel13.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel13.setLayout(new java.awt.GridBagLayout());
-
-        jLabel31.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel31.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
-        jPanel13.add(jLabel31, gridBagConstraints);
-
-        jLabel32.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel32.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel32.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 8, 0, 0);
-        jPanel13.add(jLabel32, gridBagConstraints);
-
-        jLabel33.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel33.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel33.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipadx = 6;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 101, 0, 7);
-        jPanel13.add(jLabel33, gridBagConstraints);
-
-        jButton12.setBackground(new java.awt.Color(0, 153, 0));
-        jButton12.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton12.setForeground(new java.awt.Color(255, 255, 255));
-        jButton12.setText("Detail");
-        jButton12.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton12ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(30, 67, 7, 7);
-        jPanel13.add(jButton12, gridBagConstraints);
-
-        jLabel34.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel34.setText("Stok");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.ipadx = 83;
-        gridBagConstraints.ipady = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(29, 7, 0, 0);
-        jPanel13.add(jLabel34, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 78, 52);
-        jPanel3.add(jPanel13, gridBagConstraints);
-
-        jPanel7.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
-        jPanel7.setLayout(new java.awt.GridBagLayout());
-
-        jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel9.setText("Nama Barang");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.ipadx = 13;
-        gridBagConstraints.ipady = -1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 0);
-        jPanel7.add(jLabel9, gridBagConstraints);
-
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel10.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel10.setText("Kategori");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = 57;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 8, 0, 0);
-        jPanel7.add(jLabel10, gridBagConstraints);
-
-        jLabel11.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel11.setText("Status");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipadx = 6;
-        gridBagConstraints.ipady = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 101, 0, 7);
-        jPanel7.add(jLabel11, gridBagConstraints);
-
-        jButton6.setBackground(new java.awt.Color(0, 153, 0));
-        jButton6.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton6.setForeground(new java.awt.Color(255, 255, 255));
-        jButton6.setText("Detail");
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(30, 67, 7, 7);
-        jPanel7.add(jButton6, gridBagConstraints);
-
-        jLabel35.setFont(new java.awt.Font("Segoe UI", 1, 10)); // NOI18N
-        jLabel35.setText("Stok");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.ipadx = 83;
-        gridBagConstraints.ipady = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(29, 7, 0, 0);
-        jPanel7.add(jLabel35, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 44, 78, 0);
-        jPanel3.add(jPanel7, gridBagConstraints);
+        jPanel3.add(panelDaftarBarang, gridBagConstraints);
+        jPanel3.add(jSeparator2, new java.awt.GridBagConstraints());
 
         jScrollPane1.setViewportView(jPanel3);
 
@@ -675,7 +398,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 956, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -721,39 +444,29 @@ public class DashboardPeminjam extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // Navigasi ke detail barang
-        new DetailBarang().setVisible(true);
-        this.dispose();
     }//GEN-LAST:event_jButton4ActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
-        // Navigasi ke detail barang
-        new DetailBarang().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_jButton10ActionPerformed
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSearchActionPerformed
 
-    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        // Navigasi ke detail barang
-        new DetailBarang().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_jButton11ActionPerformed
+    private void cmbKategoriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbKategoriActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbKategoriActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // Navigasi ke detail barang
-        new DetailBarang().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_jButton5ActionPerformed
+    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
+        String keyword = txtSearch.getText();
+        String kategori = cmbKategori.getSelectedItem().toString();
+        loadDataBarang(keyword, kategori);       
+    }//GEN-LAST:event_txtSearchKeyReleased
 
-    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        // Navigasi ke detail barang
-        new DetailBarang().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_jButton12ActionPerformed
-
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // Navigasi ke detail barang
-        new DetailBarang().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_jButton6ActionPerformed
+    private void cmbKategoriItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cmbKategoriItemStateChanged
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            String keyword = txtSearch.getText();
+            String kategori = cmbKategori.getSelectedItem().toString();
+            loadDataBarang(keyword, kategori);
+        }
+    }//GEN-LAST:event_cmbKategoriItemStateChanged
 
     /**
      * @param args the command line arguments
@@ -781,52 +494,25 @@ public class DashboardPeminjam extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> cmbKategori;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
-    private javax.swing.JButton jButton11;
-    private javax.swing.JButton jButton12;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
-    private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel27;
-    private javax.swing.JLabel jLabel28;
-    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel30;
-    private javax.swing.JLabel jLabel31;
-    private javax.swing.JLabel jLabel32;
-    private javax.swing.JLabel jLabel33;
-    private javax.swing.JLabel jLabel34;
-    private javax.swing.JLabel jLabel35;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel12;
-    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JPanel panelDaftarBarang;
+    private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }
