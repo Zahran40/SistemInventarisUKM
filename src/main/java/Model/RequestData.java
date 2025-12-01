@@ -10,6 +10,7 @@ package Model;
  */
 public class RequestData {
     private int idPeminjaman;
+    private int idPengembalian; // ID untuk tabel pengembalian
     private int idBarang;
     private String namaPeminjam;
     private String namaBarang;
@@ -26,6 +27,9 @@ public class RequestData {
     // Getter & Setter (Penting!)
     public int getIdPeminjaman() { return idPeminjaman; }
     public void setIdPeminjaman(int idPeminjaman) { this.idPeminjaman = idPeminjaman; }
+    
+    public int getIdPengembalian() { return idPengembalian; }
+    public void setIdPengembalian(int idPengembalian) { this.idPengembalian = idPengembalian; }
 
     public int getIdBarang() { return idBarang; }
     public void setIdBarang(int idBarang) { this.idBarang = idBarang; }

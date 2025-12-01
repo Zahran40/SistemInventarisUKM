@@ -59,10 +59,11 @@ public class AdminDAO {
         }
         return stats;
     }
-    
-    // Request yang statusnya 'proses'
+    // Request yang statusnya 'proses' DAN belum ada pengembalian
     public java.util.List<Model.RequestData> getPendingRequests() {
         java.util.List<Model.RequestData> list = new java.util.ArrayList<>();
+        // Filter: hanya tampilkan peminjaman dengan status 'proses'
+        // Tidak termasuk yang sudah disetujui atau ditolak
         String sql = "SELECT p.id_peminjaman, p.id_barang, u.nama_user, b.nama_barang, " +
                      "p.jumlah, p.tanggal_pinjam, p.tanggal_jatuh_tempo, p.keterangan, p.bukti_validasi " +
                      "FROM peminjaman p " +
@@ -96,8 +97,11 @@ public class AdminDAO {
                 list.add(rd);
             }
         } catch (java.sql.SQLException e) {
+            System.out.println("ERROR getPendingRequests: " + e.getMessage());
             e.printStackTrace();
         }
+        
+        System.out.println("DEBUG getPendingRequests: Found " + list.size() + " pending requests");
         return list;
     }
     // 2. Proses Approval (Terima / Tolak)
@@ -109,11 +113,25 @@ public class AdminDAO {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
+            
+            // VALIDASI: Cek apakah peminjaman ini sudah punya pengembalian
+            String sqlCheckPengembalian = "SELECT COUNT(*) as count FROM pengembalian WHERE id_peminjaman = ?";
+            PreparedStatement psCheck = conn.prepareStatement(sqlCheckPengembalian);
+            psCheck.setInt(1, idPeminjaman);
+            ResultSet rsCheck = psCheck.executeQuery();
+            
+            if (rsCheck.next() && rsCheck.getInt("count") > 0) {
+                System.out.println("ERROR: Peminjaman ID " + idPeminjaman + " sudah memiliki pengembalian! Tidak bisa diubah lagi.");
+                psCheck.close();
+                conn.rollback();
+                return false; // Batalkan proses
+            }
+            psCheck.close();
 
             if (keputusan.equals("Setujui")) {
                 String sqlApprove = "UPDATE peminjaman SET status = 'disetujui', " +
                                     "tanggal_pinjam = ?, tanggal_jatuh_tempo = ? " +
-                                    "WHERE id_peminjaman = ?";
+                                    "WHERE id_peminjaman = ? AND status = 'proses'"; // Tambah validasi status
                 
                 psUpdate = conn.prepareStatement(sqlApprove);
                 
@@ -124,13 +142,27 @@ public class AdminDAO {
                 psUpdate.setDate(2, java.sql.Date.valueOf(deadline));
                 psUpdate.setInt(3, idPeminjaman);
                 
-                psUpdate.executeUpdate();
+                int rowsAffected = psUpdate.executeUpdate();
+                
+                if (rowsAffected == 0) {
+                    System.out.println("WARNING: Tidak ada data yang diupdate. Mungkin status bukan 'proses'");
+                    conn.rollback();
+                    return false;
+                }
+                
+                System.out.println("DEBUG: Peminjaman " + idPeminjaman + " DISETUJUI");
                 
             } else if (keputusan.equals("Tolak")) {
-                String sqlTolak = "UPDATE peminjaman SET status = 'ditolak' WHERE id_peminjaman = ?";
+                String sqlTolak = "UPDATE peminjaman SET status = 'ditolak' WHERE id_peminjaman = ? AND status = 'proses'";
                 psUpdate = conn.prepareStatement(sqlTolak);
                 psUpdate.setInt(1, idPeminjaman);
-                psUpdate.executeUpdate();
+                int rowsAffected = psUpdate.executeUpdate();
+                
+                if (rowsAffected == 0) {
+                    System.out.println("WARNING: Tidak ada data yang diupdate. Mungkin status bukan 'proses'");
+                    conn.rollback();
+                    return false;
+                }
 
                 // Balikin Stok
                 String sqlBalikStok = "UPDATE barang SET stok = stok + ? WHERE id_barang = ?";
@@ -138,6 +170,8 @@ public class AdminDAO {
                 psStok.setInt(1, jumlah);
                 psStok.setInt(2, idBarang);
                 psStok.executeUpdate();
+                
+                System.out.println("DEBUG: Peminjaman " + idPeminjaman + " DITOLAK, stok dikembalikan");
             }
 
             conn.commit();
@@ -145,6 +179,7 @@ public class AdminDAO {
 
         } catch (SQLException e) {
             if (conn != null) { try { conn.rollback(); } catch (SQLException ex) {} }
+            System.out.println("ERROR prosesPeminjaman: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -232,7 +267,8 @@ public class AdminDAO {
             java.sql.ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Model.RequestData rd = new Model.RequestData();
-                rd.setIdPeminjaman(rs.getInt("id_pengembalian")); 
+                rd.setIdPengembalian(rs.getInt("id_pengembalian")); // ID pengembalian
+                rd.setIdPeminjaman(rs.getInt("id_peminjaman")); // ID peminjaman (untuk cek denda)
                 rd.setIdBarang(rs.getInt("id_barang"));
                 rd.setNamaPeminjam(rs.getString("nama_user"));
                 rd.setNamaBarang(rs.getString("nama_barang"));
@@ -250,6 +286,11 @@ public class AdminDAO {
 
     // Proses Konfirmasi Pengembalian
     public boolean prosesPengembalian(int idPengembalian, int idBarang, int jumlah, String keputusan) {
+        System.out.println("DEBUG prosesPengembalian - ID Pengembalian: " + idPengembalian);
+        System.out.println("DEBUG prosesPengembalian - ID Barang: " + idBarang);
+        System.out.println("DEBUG prosesPengembalian - Jumlah: " + jumlah);
+        System.out.println("DEBUG prosesPengembalian - Keputusan: " + keputusan);
+        
         String statusAkhir = keputusan.equals("Setujui") ? "selesai" : "ditolak";
         String sqlUpdate = "UPDATE pengembalian SET status = ? WHERE id_pengembalian = ?";
         String sqlStok = "UPDATE barang SET stok = stok + ? WHERE id_barang = ?";
@@ -269,6 +310,7 @@ public class AdminDAO {
             
             // 1. CEK KETERLAMBATAN DAN CREATE DENDA JIKA TERLAMBAT
             if (keputusan.equals("Setujui")) {
+                System.out.println("DEBUG - Mengecek keterlambatan...");
                 java.sql.PreparedStatement psCheck = conn.prepareStatement(sqlGetPeminjaman);
                 psCheck.setInt(1, idPengembalian);
                 java.sql.ResultSet rs = psCheck.executeQuery();
@@ -278,47 +320,63 @@ public class AdminDAO {
                     int idUser = rs.getInt("id_user");
                     java.sql.Date tanggalJatuhTempo = rs.getDate("tanggal_jatuh_tempo");
                     
+                    System.out.println("DEBUG - ID Peminjaman: " + idPeminjaman);
+                    System.out.println("DEBUG - ID User: " + idUser);
+                    System.out.println("DEBUG - Jatuh Tempo: " + tanggalJatuhTempo);
+                    
                     // Cek apakah telat
                     Service.DendaService dendaService = new Service.DendaService();
                     Model.Denda denda = dendaService.hitungDenda(idPeminjaman);
                     
                     if (denda != null) {
                         // Ada keterlambatan, simpan denda
-                        dendaService.simpanDenda(denda);
+                        boolean dendaSaved = dendaService.simpanDenda(denda);
                         System.out.println("DENDA CREATED: " + denda.getJumlahDendaFormatted() + 
-                                         " untuk user ID " + idUser);
+                                         " untuk user ID " + idUser + " (Saved: " + dendaSaved + ")");
+                    } else {
+                        System.out.println("DEBUG - Tidak ada keterlambatan");
                     }
+                } else {
+                    System.out.println("DEBUG - Data peminjaman tidak ditemukan!");
                 }
                 psCheck.close();
             }
             
             // 2. Update status pengembalian
+            System.out.println("DEBUG - Update status pengembalian ke: " + statusAkhir);
             java.sql.PreparedStatement ps = conn.prepareStatement(sqlUpdate);
             ps.setString(1, statusAkhir);
             ps.setInt(2, idPengembalian);
-            ps.executeUpdate();
+            int rowsUpdated = ps.executeUpdate();
+            System.out.println("DEBUG - Rows updated pengembalian: " + rowsUpdated);
             ps.close();
             
             // 3. Jika disetujui, kembalikan stok dan update status barang
             if (keputusan.equals("Setujui")) {
                 // Tambah stok
+                System.out.println("DEBUG - Mengembalikan stok barang...");
                 java.sql.PreparedStatement ps2 = conn.prepareStatement(sqlStok);
                 ps2.setInt(1, jumlah);
                 ps2.setInt(2, idBarang);
-                ps2.executeUpdate();
+                int rowsStok = ps2.executeUpdate();
+                System.out.println("DEBUG - Rows updated stok: " + rowsStok);
                 ps2.close();
                 
                 // Update status barang jadi 'tersedia' karena stok bertambah
+                System.out.println("DEBUG - Update status barang...");
                 java.sql.PreparedStatement ps3 = conn.prepareStatement(sqlStatus);
                 ps3.setInt(1, jumlah);
                 ps3.setInt(2, idBarang);
-                ps3.executeUpdate();
+                int rowsStatus = ps3.executeUpdate();
+                System.out.println("DEBUG - Rows updated status: " + rowsStatus);
                 ps3.close();
             }
             
             conn.commit();
+            System.out.println("DEBUG - Transaction COMMITTED successfully!");
             return true;
         } catch (Exception e) { 
+            System.out.println("ERROR prosesPengembalian: " + e.getMessage());
             e.printStackTrace();
             return false; 
         }

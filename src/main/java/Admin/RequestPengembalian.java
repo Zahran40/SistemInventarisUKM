@@ -99,7 +99,8 @@ public class RequestPengembalian extends javax.swing.JFrame {
              btnBukti.addActionListener(e -> {
                  try {
                      DAO.AdminDAO dao = new DAO.AdminDAO();
-                     java.io.File file = dao.getBuktiPengembalian(rd.getIdPeminjaman());
+                     // Gunakan rd.getIdPengembalian() yang benar
+                     java.io.File file = dao.getBuktiPengembalian(rd.getIdPengembalian());
                      
                      if (file != null && file.exists()) {
                          java.awt.Desktop.getDesktop().open(file);
@@ -128,9 +129,14 @@ public class RequestPengembalian extends javax.swing.JFrame {
             
             if (javax.swing.JOptionPane.showConfirmDialog(this, "Proses " + aksi + "?", "Cek", javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.YES_OPTION) {
                 DAO.AdminDAO dao = new DAO.AdminDAO();
-                if (dao.prosesPengembalian(rd.getIdPeminjaman(), rd.getIdBarang(), rd.getJumlah(), aksi)) {
-                    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil!");
+                // Gunakan rd.getIdPengembalian() bukan rd.getIdPeminjaman()
+                boolean sukses = dao.prosesPengembalian(rd.getIdPengembalian(), rd.getIdBarang(), rd.getJumlah(), aksi);
+                
+                if (sukses) {
+                    javax.swing.JOptionPane.showMessageDialog(this, "Berhasil diproses!");
                     loadDaftarPengembalian();
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(this, "Gagal memproses! Cek console untuk detail error.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
