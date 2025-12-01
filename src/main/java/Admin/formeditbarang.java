@@ -4,18 +4,74 @@
  */
 package Admin;
 
+import DAO.BarangDAO;
+import Model.Barang;
+import java.util.List;
+import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import Database.DatabaseConnection; 
+import Utils.SessionHelper;
+import java.sql.SQLException;
 /**
  *
  * @author asus
  */
 public class formeditbarang extends javax.swing.JDialog {
+    private Barang barangTarget;
+    private editbarang parentFrame; 
 
-    /**
-     * Creates new form formeditbarang
-     */
+    public formeditbarang(editbarang parent, Barang b) {
+        super(parent, true);
+        initComponents();
+        
+        this.parentFrame = parent;
+        this.barangTarget = b;
+        
+        setLocationRelativeTo(null);
+        isiForm(); 
+    }
+    
+    // Constructor Default (Jangan dipakai langsung)
     public formeditbarang(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+    }
+    
+    public boolean updateBarang(int idBarang, String nama, int idKategori, int stok, String status) {
+        String sql = "UPDATE barang SET nama_barang=?, id_kategori=?, stok=?, status=? WHERE id_barang=?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, nama);
+            ps.setInt(2, idKategori);
+            ps.setInt(3, stok);
+            ps.setString(4, status); // Simpan status
+            ps.setInt(5, idBarang);
+            
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    private void isiForm() {
+        // 1. Isi Kategori Dulu dari Database
+        DAO.BarangDAO dao = new DAO.BarangDAO();
+        List<String> kats = dao.getNamaKategori();
+        cmbKategori.removeAllItems();
+        for(String k : kats) cmbKategori.addItem(k);
+        
+        // 2. Set Data Barang ke Inputan
+        if (barangTarget != null) {
+            txtNama.setText(barangTarget.getNama());
+            cmbKategori.setSelectedItem(barangTarget.getNamaKategori());
+            spnStok.setValue(barangTarget.getStok());
+            // Jika mau handle status:
+            // cmbStatus.setSelectedItem(barangTarget.getStatus()); 
+        }
     }
 
     /**
@@ -31,14 +87,15 @@ public class formeditbarang extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        textField2 = new java.awt.TextField();
+        txtNama = new java.awt.TextField();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cmbKategori = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        spnStok = new javax.swing.JSpinner();
+        cmbStatus = new javax.swing.JComboBox<>();
+        btnSimpan = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -53,16 +110,16 @@ public class formeditbarang extends javax.swing.JDialog {
         jPanel1.setBackground(new java.awt.Color(60, 60, 60));
         jPanel1.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, new java.awt.Color(255, 255, 255)));
 
-        textField2.addActionListener(new java.awt.event.ActionListener() {
+        txtNama.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textField2ActionPerformed(evt);
+                txtNamaActionPerformed(evt);
             }
         });
 
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Nama Barang:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbKategori.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("Kategori :");
@@ -73,7 +130,14 @@ public class formeditbarang extends javax.swing.JDialog {
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("Stok  :");
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tersedia", "Dipinjam" }));
+        cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tersedia", "Dipinjam" }));
+
+        btnSimpan.setText("Simpan Perubahan");
+        btnSimpan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSimpanActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -85,12 +149,12 @@ public class formeditbarang extends javax.swing.JDialog {
                         .addGap(8, 8, 8)
                         .addComponent(jLabel2)
                         .addGap(10, 10, 10)
-                        .addComponent(textField2, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txtNama, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(8, 8, 8)
                         .addComponent(jLabel3)
                         .addGap(34, 34, 34)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(cmbKategori, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(7, 7, 7)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -98,8 +162,9 @@ public class formeditbarang extends javax.swing.JDialog {
                             .addComponent(jLabel4))
                         .addGap(47, 47, 47)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(spnStok, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSimpan))))
                 .addGap(69, 69, 69))
         );
         jPanel1Layout.setVerticalGroup(
@@ -108,24 +173,26 @@ public class formeditbarang extends javax.swing.JDialog {
                 .addGap(12, 12, 12)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2)
-                    .addComponent(textField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(10, 10, 10)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(3, 3, 3)
                         .addComponent(jLabel3))
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbKategori, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(3, 3, 3)
                         .addComponent(jLabel5))
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(spnStok, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(btnSimpan)
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -145,16 +212,58 @@ public class formeditbarang extends javax.swing.JDialog {
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(12, 12, 12))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void textField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textField2ActionPerformed
+    private void txtNamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNamaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_textField2ActionPerformed
+    }//GEN-LAST:event_txtNamaActionPerformed
+
+    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        // 1. AMBIL DATA DARI INPUTAN
+        String namaBaru = txtNama.getText();
+        String katBaru = cmbKategori.getSelectedItem().toString();
+        int stokBaru = (int) spnStok.getValue();
+        String statusBaru = cmbStatus.getSelectedItem().toString(); // Pastikan combo status sudah di-rename jadi cmbStatus
+        
+        // 2. VALIDASI SEDERHANA
+        if (namaBaru.trim().isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Nama barang tidak boleh kosong!");
+            return;
+        }
+
+        // 3. PROSES UPDATE KE DATABASE
+        DAO.BarangDAO dao = new DAO.BarangDAO();
+        
+        // Kita butuh ID Kategori (bukan namanya) untuk disimpan ke tabel barang
+        int idKat = dao.getKategoriId(katBaru); 
+        
+        // Panggil fungsi update (Pastikan urutan parameternya sama dengan di DAO!)
+        // Parameter: (ID Barang Asli, Nama Baru, ID Kategori Baru, Stok Baru, Status Baru)
+        boolean sukses = dao.updateBarang(barangTarget.getId(), namaBaru, idKat, stokBaru, statusBaru);
+        
+        // 4. HASIL EKSEKUSI
+        if (sukses) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Data berhasil diperbarui!");
+            
+            // Tutup Popup Edit
+            this.dispose();
+            
+            // REFRESH HALAMAN BELAKANG (Daftar Barang)
+            // Caranya: Tutup frame parent yang lama, buka yang baru
+            if (parentFrame != null) {
+                parentFrame.dispose();
+                new Admin.editbarang().setVisible(true);
+            }
+            
+        } else {
+            javax.swing.JOptionPane.showMessageDialog(this, "Gagal mengupdate data. Cek koneksi database.");
+        }
+    }//GEN-LAST:event_btnSimpanActionPerformed
 
     /**
      * @param args the command line arguments
@@ -199,8 +308,9 @@ public class formeditbarang extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JButton btnSimpan;
+    private javax.swing.JComboBox<String> cmbKategori;
+    private javax.swing.JComboBox<String> cmbStatus;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -209,7 +319,7 @@ public class formeditbarang extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSpinner jSpinner1;
-    private java.awt.TextField textField2;
+    private javax.swing.JSpinner spnStok;
+    private java.awt.TextField txtNama;
     // End of variables declaration//GEN-END:variables
 }

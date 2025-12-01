@@ -25,11 +25,23 @@ public class DashboardAdmin extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        
+        loadDashboardData();
     }
     
-    /**
-     * Method untuk check apakah user sudah login sebagai admin
-     */
+    // Method untuk mengisi angka-angka dashboard
+    private void loadDashboardData() {
+        DAO.AdminDAO dao = new DAO.AdminDAO();
+        java.util.Map<String, Integer> stats = dao.getDashboardStats();
+
+        jLabel10.setText(stats.get("total_stok") + " Barang");  
+        jLabel14.setText(stats.get("total_jenis") + " Jenis");  
+        jLabel7.setText(stats.get("tersedia") + " Jenis");     
+        jLabel15.setText(stats.get("dipinjam") + " Unit");      
+    }
+    
+    // Method untuk check apakah user sudah login sebagai admin
+    
     private void checkSession() {
         UserSession session = UserSession.getInstance();
         

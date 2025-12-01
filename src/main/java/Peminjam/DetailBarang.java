@@ -5,6 +5,12 @@
 package Peminjam;
 
 import Utils.SessionHelper;
+import DAO.PeminjamanDAO;
+import javax.swing.JOptionPane;
+import Utils.SessionHelper;
+import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -23,7 +29,48 @@ public class DetailBarang extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
     }
+    
+    // Variabel untuk menyimpan ID yang sedang dilihat
+    private int currentIdBarang;
+    private int stokTersedia = 0;
+    private String selectedBuktiName = "";
+    
+    // UBAH CONSTRUCTOR BAWAAN NETBEANS JADI SEPERTI INI:
+    public DetailBarang(int id) {
+        initComponents();
+        this.currentIdBarang = id; 
+        
+        tampilkanDetail(); 
+    }
+    
+    // Method helper untuk menampilkan data ke Label-label GUI
+    private void tampilkanDetail() {
+        DAO.BarangDAO dao = new DAO.BarangDAO();
+        Model.Barang b = dao.getBarangById(currentIdBarang);
+        
+        if (b != null) {
+            this.stokTersedia = b.getStok(); 
 
+            // Set Label
+            lblNamaBarang.setText(b.getNama());
+            lblKategori.setText(b.getNamaKategori());
+            lblStatus.setText(b.getStatus());
+            lblStok.setText(String.valueOf(b.getStok()));
+            
+            // Bersihkan Text Area Keterangan (Agar tulisan "ini adalah barang" hilang)
+            jTextArea1.setText(""); 
+            
+            // Update Limit Spinner sesuai Stok
+            if (b.getStok() > 0) {
+                 jSpinner1.setModel(new javax.swing.SpinnerNumberModel(1, 1, b.getStok(), 1));
+                 btnPinjam.setEnabled(true);
+            } else {
+                 btnPinjam.setEnabled(false);
+                 btnPinjam.setText("Stok Habis");
+            }
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -50,16 +97,16 @@ public class DetailBarang extends javax.swing.JFrame {
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
-        jLabel26 = new javax.swing.JLabel();
-        jLabel27 = new javax.swing.JLabel();
+        lblNamaBarang = new javax.swing.JLabel();
+        lblKategori = new javax.swing.JLabel();
+        lblStatus = new javax.swing.JLabel();
+        lblStok = new javax.swing.JLabel();
         jPanel11 = new javax.swing.JPanel();
         jLabel28 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jPanel12 = new javax.swing.JPanel();
-        jButton8 = new javax.swing.JButton();
+        btnPinjam = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jButton5 = new javax.swing.JButton();
@@ -144,17 +191,17 @@ public class DetailBarang extends javax.swing.JFrame {
         jLabel23.setForeground(new java.awt.Color(51, 153, 0));
         jLabel23.setText("Stok :");
 
-        jLabel24.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel24.setText("Kamera");
+        lblNamaBarang.setForeground(new java.awt.Color(51, 153, 0));
+        lblNamaBarang.setText("Kamera");
 
-        jLabel25.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel25.setText("Elektronik");
+        lblKategori.setForeground(new java.awt.Color(51, 153, 0));
+        lblKategori.setText("Elektronik");
 
-        jLabel26.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel26.setText("Tersedia");
+        lblStatus.setForeground(new java.awt.Color(51, 153, 0));
+        lblStatus.setText("Tersedia");
 
-        jLabel27.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel27.setText("4");
+        lblStok.setForeground(new java.awt.Color(51, 153, 0));
+        lblStok.setText("4");
 
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
@@ -166,19 +213,19 @@ public class DetailBarang extends javax.swing.JFrame {
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel23)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel27))
+                        .addComponent(lblStok))
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel22)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel26))
+                        .addComponent(lblStatus))
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel21)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel25))
+                        .addComponent(lblKategori))
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel20)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel24)))
+                        .addComponent(lblNamaBarang)))
                 .addContainerGap(117, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
@@ -187,19 +234,19 @@ public class DetailBarang extends javax.swing.JFrame {
                 .addGap(17, 17, 17)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel20)
-                    .addComponent(jLabel24))
+                    .addComponent(lblNamaBarang))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel21)
-                    .addComponent(jLabel25))
+                    .addComponent(lblKategori))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel22)
-                    .addComponent(jLabel26))
+                    .addComponent(lblStatus))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel23)
-                    .addComponent(jLabel27))
+                    .addComponent(lblStok))
                 .addContainerGap(13, Short.MAX_VALUE))
         );
 
@@ -215,13 +262,13 @@ public class DetailBarang extends javax.swing.JFrame {
 
         jPanel12.setBackground(new java.awt.Color(255, 255, 255));
 
-        jButton8.setBackground(new java.awt.Color(0, 153, 0));
-        jButton8.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButton8.setForeground(new java.awt.Color(255, 255, 255));
-        jButton8.setText("Pinjam Barang");
-        jButton8.addActionListener(new java.awt.event.ActionListener() {
+        btnPinjam.setBackground(new java.awt.Color(0, 153, 0));
+        btnPinjam.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        btnPinjam.setForeground(new java.awt.Color(255, 255, 255));
+        btnPinjam.setText("Pinjam Barang");
+        btnPinjam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton8ActionPerformed(evt);
+                btnPinjamActionPerformed(evt);
             }
         });
 
@@ -239,7 +286,7 @@ public class DetailBarang extends javax.swing.JFrame {
         jPanel12Layout.setHorizontalGroup(
             jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel12Layout.createSequentialGroup()
-                .addComponent(jButton8)
+                .addComponent(btnPinjam)
                 .addGap(24, 24, 24)
                 .addComponent(jButton9)
                 .addContainerGap(30, Short.MAX_VALUE))
@@ -249,7 +296,7 @@ public class DetailBarang extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
                 .addGap(0, 24, Short.MAX_VALUE)
                 .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton8)
+                    .addComponent(btnPinjam)
                     .addComponent(jButton9)))
         );
 
@@ -260,6 +307,11 @@ public class DetailBarang extends javax.swing.JFrame {
         jButton5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton5.setForeground(new java.awt.Color(255, 255, 255));
         jButton5.setText("Upload Ktm/ktms");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
         jPanel11.setLayout(jPanel11Layout);
@@ -270,9 +322,7 @@ public class DetailBarang extends javax.swing.JFrame {
                     .addGroup(jPanel11Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel11Layout.createSequentialGroup()
-                                .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel11Layout.createSequentialGroup()
                                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
@@ -518,9 +568,84 @@ public class DetailBarang extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton9ActionPerformed
 
-    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton8ActionPerformed
+    private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
+        // 1. Ambil Inputan User
+        int jumlahPinjam = (int) jSpinner1.getValue();
+        String catatanUser = jTextArea1.getText(); 
+        
+        // 2. VALIDASI JUMLAH & STOK
+        if (jumlahPinjam <= 0) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Jumlah pinjam minimal 1!");
+            return;
+        }
+        if (jumlahPinjam > this.stokTersedia) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Stok barang tidak mencukupi!");
+            return;
+        }
+
+        // 3. VALIDASI BUKTI (WAJIB DIISI) - INI YANG ANDA MINTA
+        // selectedBuktiName adalah variabel global yang diisi saat tombol Upload ditekan
+        if (selectedBuktiName == null || selectedBuktiName.trim().isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Wajib upload bukti validasi (KTM) sebelum meminjam!", 
+                "Peringatan", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return; // Berhenti di sini, jangan lanjut simpan
+        }
+
+        // 4. Konfirmasi Akhir
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(this, 
+            "Ajukan peminjaman " + jumlahPinjam + " unit " + lblNamaBarang.getText() + "?\n(Menunggu persetujuan Admin)",
+            "Konfirmasi Pengajuan",
+            javax.swing.JOptionPane.YES_NO_OPTION);
+
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            // ID User (Sementara Hardcode 2, nanti ganti SessionHelper.getUserId())
+            int idUser = 2; 
+    
+            // 5. Simpan ke Database
+            DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();
+            java.io.File fileBukti = new java.io.File(selectedBuktiName); 
+            boolean sukses = dao.ajukanPeminjaman(idUser, currentIdBarang, jumlahPinjam, catatanUser, fileBukti);
+
+            if (sukses) {
+                // 6. PESAN SUKSES YANG BENAR (Bukan suruh ambil barang)
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Pengajuan Berhasil!\nSilakan cek menu 'Riwayat' untuk melihat status persetujuan Admin.",
+                    "Sukses",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                
+                new DashboardPeminjam().setVisible(true);
+                this.dispose(); 
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Gagal mengajukan peminjaman. Terjadi kesalahan sistem.");
+            }
+        }
+    }//GEN-LAST:event_btnPinjamActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        // 1. File Chooser
+        JFileChooser fileChooser = new JFileChooser();
+        
+        // 2. Filter hanya file gambar
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Gambar (JPG & PNG)", "jpg", "png", "jpeg");
+        fileChooser.setFileFilter(filter);
+        
+        // 3. Tampilkan Dialog
+        int result = fileChooser.showOpenDialog(this);
+        
+        // 4. Jika user memilih file
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            
+            // Simpan nama file ke variabel global
+            this.selectedBuktiName = selectedFile.getAbsolutePath();
+            
+            // Ubah teks tombol agar user tahu file masuk
+            jButton5.setText(selectedFile.getName());
+            jButton5.setBackground(new java.awt.Color(0, 102, 204)); // Jadi biru
+        }     
+    }//GEN-LAST:event_jButton5ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -548,12 +673,12 @@ public class DetailBarang extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnPinjam;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton8;
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel19;
@@ -562,10 +687,6 @@ public class DetailBarang extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
-    private javax.swing.JLabel jLabel26;
-    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel10;
@@ -585,5 +706,9 @@ public class DetailBarang extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JLabel lblKategori;
+    private javax.swing.JLabel lblNamaBarang;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JLabel lblStok;
     // End of variables declaration//GEN-END:variables
 }
