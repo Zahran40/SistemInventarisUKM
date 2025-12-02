@@ -30,12 +30,11 @@ public class LogPeminjaman extends javax.swing.JFrame {
      * Creates new form LogPeminjaman
      */
     public LogPeminjaman() {
-        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         
-        loadLogData(); // Panggil fungsi load saat dibuka
+        loadLogData();
     }
 
     private void loadLogData() {
@@ -136,6 +135,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
         logpeminjaman = new javax.swing.JButton();
         reqpeminjaman = new javax.swing.JButton();
         reqpengembalian = new javax.swing.JButton();
+        manajemendenda = new javax.swing.JButton();
         addbarang1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -253,6 +253,18 @@ public class LogPeminjaman extends javax.swing.JFrame {
             }
         });
 
+        manajemendenda.setBackground(new java.awt.Color(60, 63, 65));
+        manajemendenda.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        manajemendenda.setForeground(new java.awt.Color(255, 255, 255));
+        manajemendenda.setText("Manajemen Denda");
+        manajemendenda.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        manajemendenda.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        manajemendenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manajemendendaActionPerformed(evt);
+            }
+        });
+
         addbarang1.setBackground(new java.awt.Color(60, 63, 65));
         addbarang1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         addbarang1.setForeground(new java.awt.Color(255, 255, 255));
@@ -288,6 +300,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
                     .addComponent(logpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(reqpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(reqpengembalian, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(manajemendenda, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addbarang1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -309,6 +322,8 @@ public class LogPeminjaman extends javax.swing.JFrame {
                 .addComponent(reqpeminjaman, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(reqpengembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(manajemendenda, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -364,8 +379,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
     }//GEN-LAST:event_hapusbarangActionPerformed
 
     private void logpeminjamanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logpeminjamanActionPerformed
-        new LogPeminjaman().setVisible(true);
-        this.dispose();
+        // Sudah di halaman log peminjaman, tidak perlu navigasi
     }//GEN-LAST:event_logpeminjamanActionPerformed
 
     private void reqpeminjamanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqpeminjamanActionPerformed
@@ -377,6 +391,11 @@ public class LogPeminjaman extends javax.swing.JFrame {
         new RequestPengembalian().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_reqpengembalianActionPerformed
+
+    private void manajemendendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manajemendendaActionPerformed
+        new ManajemenDenda().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_manajemendendaActionPerformed
 
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
         new DashboardAdmin().setVisible(true);
@@ -432,5 +451,6 @@ public class LogPeminjaman extends javax.swing.JFrame {
     private javax.swing.JPanel panelLogContainer;
     private javax.swing.JButton reqpeminjaman;
     private javax.swing.JButton reqpengembalian;
+    private javax.swing.JButton manajemendenda;
     // End of variables declaration//GEN-END:variables
 }

@@ -13,34 +13,33 @@ public class DatabaseConnection {
     private static final String USERNAME = "root"; // Sesuaikan dengan username MySQL Anda
     private static final String PASSWORD = ""; // Sesuaikan dengan password MySQL Anda
     
-    private static Connection connection;
-    
     /**
-     * Mendapatkan koneksi database
+     * Mendapatkan koneksi database BARU setiap kali dipanggil
+     * PENTING: Caller harus menutup connection setelah digunakan!
      * @return Connection object
      */
     public static Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
-                // Load MySQL JDBC Driver
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                System.out.println("Database connected successfully!");
-            }
+            // Load MySQL JDBC Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("Database connected successfully!");
+            return conn;
         } catch (ClassNotFoundException e) {
             System.err.println("MySQL JDBC Driver not found!");
             e.printStackTrace();
+            return null;
         } catch (SQLException e) {
             System.err.println("Failed to connect to database!");
             e.printStackTrace();
+            return null;
         }
-        return connection;
     }
     
     /**
      * Menutup koneksi database
      */
-    public static void closeConnection() {
+    public static void closeConnection(Connection connection) {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
@@ -58,7 +57,11 @@ public class DatabaseConnection {
     public static boolean testConnection() {
         try {
             Connection conn = getConnection();
-            return conn != null && !conn.isClosed();
+            boolean isValid = conn != null && !conn.isClosed();
+            if (conn != null) {
+                conn.close();
+            }
+            return isValid;
         } catch (SQLException e) {
             return false;
         }

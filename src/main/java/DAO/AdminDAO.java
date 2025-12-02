@@ -64,12 +64,14 @@ public class AdminDAO {
         java.util.List<Model.RequestData> list = new java.util.ArrayList<>();
         // Filter: hanya tampilkan peminjaman dengan status 'proses'
         // Tidak termasuk yang sudah disetujui atau ditolak
+        // JUGA tidak termasuk yang sudah ada pengembalian (sudah dikembalikan)
         String sql = "SELECT p.id_peminjaman, p.id_barang, u.nama_user, b.nama_barang, " +
                      "p.jumlah, p.tanggal_pinjam, p.tanggal_jatuh_tempo, p.keterangan, p.bukti_validasi " +
                      "FROM peminjaman p " +
                      "JOIN users u ON p.id_user = u.id_user " +
                      "JOIN barang b ON p.id_barang = b.id_barang " +
-                     "WHERE p.status = 'proses' " +
+                     "LEFT JOIN pengembalian pg ON p.id_peminjaman = pg.id_peminjaman " +
+                     "WHERE p.status = 'proses' AND pg.id_pengembalian IS NULL " +
                      "ORDER BY p.tanggal_pinjam ASC";
 
         try (java.sql.Connection conn = Database.DatabaseConnection.getConnection();
@@ -285,31 +287,24 @@ public class AdminDAO {
     }
 
     // Proses Konfirmasi Pengembalian
-    public boolean prosesPengembalian(int idPengembalian, int idBarang, int jumlah, String keputusan) {
+    public boolean prosesPengembalian(int idPengembalian, int idBarang, int jumlah, String keputusan, String keteranganAdmin) {
         System.out.println("=== DEBUG prosesPengembalian START ===");
         System.out.println("DEBUG prosesPengembalian - ID Pengembalian: " + idPengembalian);
         System.out.println("DEBUG prosesPengembalian - ID Barang: " + idBarang);
         System.out.println("DEBUG prosesPengembalian - Jumlah: " + jumlah);
         System.out.println("DEBUG prosesPengembalian - Keputusan: " + keputusan);
+        System.out.println("DEBUG prosesPengembalian - Keterangan Admin: " + keteranganAdmin);
         
-        String statusAkhir = keputusan.equals("Setujui") ? "selesai" : "ditolak";
-        String sqlUpdate = "UPDATE pengembalian SET status = ? WHERE id_pengembalian = ?";
+        String statusAkhir = keputusan.equals("Setujui") ? "disetujui" : "ditolak";
+        String sqlUpdate = "UPDATE pengembalian SET status = ?, keterangan_admin = ? WHERE id_pengembalian = ?";
         String sqlStok = "UPDATE barang SET stok = stok + ? WHERE id_barang = ?";
         String sqlStatus = "UPDATE barang SET status = CASE " +
                           "WHEN stok + ? > 0 THEN 'tersedia' " +
                           "ELSE 'tidak tersedia' " +
                           "END WHERE id_barang = ?";
-        
-        // Query untuk cek keterlambatan
-        String sqlGetPeminjaman = "SELECT pg.id_peminjaman, pg.id_user, p.tanggal_jatuh_tempo " +
-                                  "FROM pengembalian pg " +
-                                  "JOIN peminjaman p ON pg.id_peminjaman = p.id_peminjaman " +
-                                  "WHERE pg.id_pengembalian = ?";
-        
-        java.sql.Connection conn = null;
 
         try {
-            conn = Database.DatabaseConnection.getConnection();
+            java.sql.Connection conn = Database.DatabaseConnection.getConnection();
             if (conn == null) {
                 System.out.println("ERROR: Database connection is NULL!");
                 return false;
@@ -318,101 +313,114 @@ public class AdminDAO {
             conn.setAutoCommit(false);
             System.out.println("DEBUG - Connection established, autocommit=false");
             
-            // 1. CEK KETERLAMBATAN DAN CREATE DENDA JIKA TERLAMBAT
-            if (keputusan.equals("Setujui")) {
-                System.out.println("DEBUG - Mengecek keterlambatan...");
-                java.sql.PreparedStatement psCheck = conn.prepareStatement(sqlGetPeminjaman);
-                psCheck.setInt(1, idPengembalian);
-                java.sql.ResultSet rs = psCheck.executeQuery();
-                
-                if (rs.next()) {
-                    int idPeminjaman = rs.getInt("id_peminjaman");
-                    int idUser = rs.getInt("id_user");
-                    java.sql.Date tanggalJatuhTempo = rs.getDate("tanggal_jatuh_tempo");
+            try {
+                // 1. CEK KETERLAMBATAN DAN CREATE DENDA JIKA TERLAMBAT
+                if (keputusan.equals("Setujui")) {
+                    System.out.println("DEBUG - Mengecek keterlambatan...");
                     
-                    System.out.println("DEBUG - ID Peminjaman: " + idPeminjaman);
-                    System.out.println("DEBUG - ID User: " + idUser);
-                    System.out.println("DEBUG - Jatuh Tempo: " + tanggalJatuhTempo);
+                    // Query untuk ambil tanggal_kembali dari pengembalian
+                    String sqlGetPengembalian = "SELECT pg.id_peminjaman, pg.id_user, pg.tanggal_kembali, " +
+                                                "p.tanggal_jatuh_tempo " +
+                                                "FROM pengembalian pg " +
+                                                "JOIN peminjaman p ON pg.id_peminjaman = p.id_peminjaman " +
+                                                "WHERE pg.id_pengembalian = ?";
                     
-                    // Cek apakah telat
-                    Service.DendaService dendaService = new Service.DendaService();
-                    Model.Denda denda = dendaService.hitungDenda(idPeminjaman);
+                    java.sql.PreparedStatement psCheck = conn.prepareStatement(sqlGetPengembalian);
+                    psCheck.setInt(1, idPengembalian);
+                    java.sql.ResultSet rs = psCheck.executeQuery();
                     
-                    if (denda != null) {
-                        // Ada keterlambatan, simpan denda
-                        boolean dendaSaved = dendaService.simpanDenda(denda);
-                        System.out.println("DENDA CREATED: " + denda.getJumlahDendaFormatted() + 
-                                         " untuk user ID " + idUser + " (Saved: " + dendaSaved + ")");
+                    if (rs.next()) {
+                        int idPeminjaman = rs.getInt("id_peminjaman");
+                        int idUser = rs.getInt("id_user");
+                        java.sql.Date tanggalJatuhTempo = rs.getDate("tanggal_jatuh_tempo");
+                        java.sql.Date tanggalKembali = rs.getDate("tanggal_kembali");
+                        
+                        System.out.println("DEBUG - ID Peminjaman: " + idPeminjaman);
+                        System.out.println("DEBUG - ID User: " + idUser);
+                        System.out.println("DEBUG - Jatuh Tempo: " + tanggalJatuhTempo);
+                        System.out.println("DEBUG - Tanggal Kembali: " + tanggalKembali);
+                        
+                        // Cek apakah telat BERDASARKAN TANGGAL PENGEMBALIAN
+                        Service.DendaService dendaService = new Service.DendaService();
+                        Model.Denda denda = dendaService.hitungDenda(idPeminjaman, tanggalKembali);
+                        
+                        if (denda != null) {
+                            // Ada keterlambatan, simpan denda
+                            boolean dendaSaved = dendaService.simpanDenda(denda);
+                            System.out.println("DENDA CREATED: " + denda.getJumlahDendaFormatted() + 
+                                             " untuk user ID " + idUser + " (Saved: " + dendaSaved + ")");
+                        } else {
+                            System.out.println("DEBUG - Tidak ada keterlambatan");
+                        }
                     } else {
-                        System.out.println("DEBUG - Tidak ada keterlambatan");
+                        System.out.println("DEBUG - Data peminjaman tidak ditemukan!");
                     }
-                } else {
-                    System.out.println("DEBUG - Data peminjaman tidak ditemukan!");
+                    rs.close();
+                    psCheck.close();
                 }
-                psCheck.close();
-            }
-            
-            // 2. Update status pengembalian
-            System.out.println("DEBUG - Update status pengembalian ke: " + statusAkhir);
-            java.sql.PreparedStatement ps = conn.prepareStatement(sqlUpdate);
-            ps.setString(1, statusAkhir);
-            ps.setInt(2, idPengembalian);
-            int rowsUpdated = ps.executeUpdate();
-            System.out.println("DEBUG - Rows updated pengembalian: " + rowsUpdated);
-            ps.close();
-            
-            // 3. Jika disetujui, kembalikan stok dan update status barang
-            if (keputusan.equals("Setujui")) {
-                // Tambah stok
-                System.out.println("DEBUG - Mengembalikan stok barang...");
-                java.sql.PreparedStatement ps2 = conn.prepareStatement(sqlStok);
-                ps2.setInt(1, jumlah);
-                ps2.setInt(2, idBarang);
-                int rowsStok = ps2.executeUpdate();
-                System.out.println("DEBUG - Rows updated stok: " + rowsStok);
-                ps2.close();
                 
-                // Update status barang jadi 'tersedia' karena stok bertambah
-                System.out.println("DEBUG - Update status barang...");
-                java.sql.PreparedStatement ps3 = conn.prepareStatement(sqlStatus);
-                ps3.setInt(1, jumlah);
-                ps3.setInt(2, idBarang);
-                int rowsStatus = ps3.executeUpdate();
-                System.out.println("DEBUG - Rows updated status: " + rowsStatus);
-                ps3.close();
-            }
-            
-            conn.commit();
-            System.out.println("DEBUG - Transaction COMMITTED successfully!");
-            System.out.println("=== DEBUG prosesPengembalian END (SUCCESS) ===");
-            return true;
-        } catch (Exception e) { 
-            System.out.println("=== ERROR prosesPengembalian ===");
-            System.out.println("ERROR Message: " + e.getMessage());
-            System.out.println("ERROR Class: " + e.getClass().getName());
-            e.printStackTrace();
-            
-            // Rollback transaction jika error
-            if (conn != null) {
+                // 2. Update status pengembalian dengan keterangan admin
+                System.out.println("DEBUG - Update status pengembalian ke: " + statusAkhir);
+                java.sql.PreparedStatement ps = conn.prepareStatement(sqlUpdate);
+                ps.setString(1, statusAkhir);
+                ps.setString(2, keteranganAdmin); // Keterangan dari admin
+                ps.setInt(3, idPengembalian);
+                int rowsUpdated = ps.executeUpdate();
+                System.out.println("DEBUG - Rows updated pengembalian: " + rowsUpdated);
+                ps.close();
+                
+                // 3. Jika disetujui, kembalikan stok dan update status barang
+                if (keputusan.equals("Setujui")) {
+                    // Tambah stok
+                    System.out.println("DEBUG - Mengembalikan stok barang...");
+                    java.sql.PreparedStatement ps2 = conn.prepareStatement(sqlStok);
+                    ps2.setInt(1, jumlah);
+                    ps2.setInt(2, idBarang);
+                    int rowsStok = ps2.executeUpdate();
+                    System.out.println("DEBUG - Rows updated stok: " + rowsStok);
+                    ps2.close();
+                    
+                    // Update status barang jadi 'tersedia' karena stok bertambah
+                    System.out.println("DEBUG - Update status barang...");
+                    java.sql.PreparedStatement ps3 = conn.prepareStatement(sqlStatus);
+                    ps3.setInt(1, jumlah);
+                    ps3.setInt(2, idBarang);
+                    int rowsStatus = ps3.executeUpdate();
+                    System.out.println("DEBUG - Rows updated status: " + rowsStatus);
+                    ps3.close();
+                }
+                
+                conn.commit();
+                System.out.println("DEBUG - Transaction COMMITTED successfully!");
+                System.out.println("=== DEBUG prosesPengembalian END (SUCCESS) ===");
+                return true;
+                
+            } catch (Exception e) {
+                System.out.println("=== ERROR prosesPengembalian ===");
+                System.out.println("ERROR Message: " + e.getMessage());
+                System.out.println("ERROR Class: " + e.getClass().getName());
+                e.printStackTrace();
+                
                 try {
                     conn.rollback();
                     System.out.println("Transaction ROLLED BACK");
                 } catch (Exception rollbackEx) {
                     System.out.println("Rollback error: " + rollbackEx.getMessage());
                 }
-            }
-            
-            return false;
-        } finally {
-            // Close connection
-            if (conn != null) {
+                throw e; // Re-throw untuk ditangkap outer catch
+            } finally {
                 try {
+                    conn.setAutoCommit(true); // Reset autocommit
                     conn.close();
                     System.out.println("DEBUG - Connection closed");
                 } catch (Exception closeEx) {
                     System.out.println("Close connection error: " + closeEx.getMessage());
                 }
             }
+            
+        } catch (Exception e) { 
+            System.out.println("OUTER EXCEPTION: " + e.getMessage());
+            return false;
         }
     }
     

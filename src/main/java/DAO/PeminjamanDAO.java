@@ -86,6 +86,36 @@ public class PeminjamanDAO {
         return list;
     }
     
+    /**
+     * Hitung jumlah peminjaman aktif (disetujui tapi belum dikembalikan)
+     * untuk validasi maksimal 2 peminjaman aktif
+     */
+    public int hitungPeminjamanAktif(int idUser) {
+        int jumlah = 0;
+        // Peminjaman aktif = status 'disetujui' DAN belum ada di tabel pengembalian dengan status 'disetujui'
+        String sql = "SELECT COUNT(*) as total " +
+                     "FROM peminjaman p " +
+                     "WHERE p.id_user = ? " +
+                     "AND p.status = 'disetujui' " +
+                     "AND NOT EXISTS (" +
+                     "    SELECT 1 FROM pengembalian pg " +
+                     "    WHERE pg.id_peminjaman = p.id_peminjaman " +
+                     "    AND pg.status = 'disetujui'" +
+                     ")";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUser);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                jumlah = rs.getInt("total");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jumlah;
+    }
+    
     public int hitungTotalRiwayat(int idUser) {
         int total = 0;
         String sql = "SELECT COUNT(*) AS total FROM peminjaman WHERE id_user = ?";
@@ -112,7 +142,7 @@ public class PeminjamanDAO {
         // UPDATE: Join dengan tabel pengembalian untuk dapat status pengembalian
         String sql = "SELECT p.id_peminjaman, b.nama_barang, p.tanggal_pinjam, p.tanggal_jatuh_tempo, " +
                      "p.status, p.jumlah, p.keterangan, " +
-                     "pg.status as status_pengembalian, pg.tanggal_kembali " +
+                     "pg.status as status_pengembalian, pg.tanggal_kembali, pg.keterangan_admin " +
                      "FROM peminjaman p " +
                      "JOIN barang b ON p.id_barang = b.id_barang " +
                      "LEFT JOIN pengembalian pg ON p.id_peminjaman = pg.id_peminjaman " +
@@ -138,7 +168,7 @@ public class PeminjamanDAO {
                     // Logic: Jika ada pengembalian, gunakan status pengembalian
                     if (statusPengembalian != null && !statusPengembalian.isEmpty()) {
                         // Status pengembalian lebih prioritas
-                        if ("selesai".equalsIgnoreCase(statusPengembalian)) {
+                        if ("disetujui".equalsIgnoreCase(statusPengembalian)) {
                             rd.setStatus("dikembalikan"); // Status untuk tampilan user
                         } else if ("ditolak".equalsIgnoreCase(statusPengembalian)) {
                             rd.setStatus("pengembalian_ditolak"); // Ditolak admin
@@ -152,6 +182,7 @@ public class PeminjamanDAO {
                     
                     rd.setJumlah(rs.getInt("jumlah"));
                     rd.setKeterangan(rs.getString("keterangan"));
+                    rd.setKeteranganAdmin(rs.getString("keterangan_admin")); // Ambil keterangan dari admin
                     
                     list.add(rd);
                 }

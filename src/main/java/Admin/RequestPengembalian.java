@@ -29,7 +29,6 @@ public class RequestPengembalian extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RequestPengembalian.class.getName());
 
     public RequestPengembalian() {
-        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
@@ -128,9 +127,28 @@ public class RequestPengembalian extends javax.swing.JFrame {
             if (aksi.equals("Pilih...")) return;
             
             if (javax.swing.JOptionPane.showConfirmDialog(this, "Proses " + aksi + "?", "Cek", javax.swing.JOptionPane.YES_NO_OPTION) == javax.swing.JOptionPane.YES_OPTION) {
+                String keterangan = "";
+                
+                // Jika admin menolak, minta keterangan wajib
+                if (aksi.equals("Tolak")) {
+                    keterangan = javax.swing.JOptionPane.showInputDialog(this,
+                        "Masukkan keterangan penolakan:\n(contoh: Barang rusak, jumpai saya di UKM)",
+                        "Keterangan Penolakan",
+                        javax.swing.JOptionPane.PLAIN_MESSAGE);
+                    
+                    // Validasi keterangan tidak boleh kosong untuk penolakan
+                    if (keterangan == null || keterangan.trim().isEmpty()) {
+                        javax.swing.JOptionPane.showMessageDialog(this, 
+                            "Keterangan wajib diisi untuk penolakan!", 
+                            "Peringatan", 
+                            javax.swing.JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                }
+                
                 DAO.AdminDAO dao = new DAO.AdminDAO();
                 // Gunakan rd.getIdPengembalian() bukan rd.getIdPeminjaman()
-                boolean sukses = dao.prosesPengembalian(rd.getIdPengembalian(), rd.getIdBarang(), rd.getJumlah(), aksi);
+                boolean sukses = dao.prosesPengembalian(rd.getIdPengembalian(), rd.getIdBarang(), rd.getJumlah(), aksi, keterangan);
                 
                 if (sukses) {
                     javax.swing.JOptionPane.showMessageDialog(this, "Berhasil diproses!");
@@ -168,6 +186,7 @@ public class RequestPengembalian extends javax.swing.JFrame {
         logpeminjaman = new javax.swing.JButton();
         reqpeminjaman = new javax.swing.JButton();
         reqpengembalian = new javax.swing.JButton();
+        manajemendenda = new javax.swing.JButton();
         addbarang1 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -253,6 +272,18 @@ public class RequestPengembalian extends javax.swing.JFrame {
             }
         });
 
+        manajemendenda.setBackground(new java.awt.Color(60, 63, 65));
+        manajemendenda.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        manajemendenda.setForeground(new java.awt.Color(255, 255, 255));
+        manajemendenda.setText("Manajemen Denda");
+        manajemendenda.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        manajemendenda.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        manajemendenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manajemendendaActionPerformed(evt);
+            }
+        });
+
         addbarang1.setBackground(new java.awt.Color(60, 63, 65));
         addbarang1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         addbarang1.setForeground(new java.awt.Color(255, 255, 255));
@@ -269,6 +300,11 @@ public class RequestPengembalian extends javax.swing.JFrame {
         jButton4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton4.setForeground(new java.awt.Color(255, 255, 255));
         jButton4.setText("Log Out");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -283,6 +319,7 @@ public class RequestPengembalian extends javax.swing.JFrame {
                     .addComponent(logpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(reqpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(reqpengembalian, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(manajemendenda, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addbarang1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -304,6 +341,8 @@ public class RequestPengembalian extends javax.swing.JFrame {
                 .addComponent(reqpeminjaman, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(reqpengembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(manajemendenda, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -413,22 +452,26 @@ public class RequestPengembalian extends javax.swing.JFrame {
     }//GEN-LAST:event_reqpeminjamanActionPerformed
 
     private void reqpengembalianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqpengembalianActionPerformed
-        new RequestPengembalian().setVisible(true);
-        this.dispose();
+        // Sudah di halaman request pengembalian, tidak perlu navigasi
     }//GEN-LAST:event_reqpengembalianActionPerformed
+
+    private void manajemendendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manajemendendaActionPerformed
+        new ManajemenDenda().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_manajemendendaActionPerformed
 
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
         new DashboardAdmin().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_addbarang1ActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // Logout functionality
         Utils.UserSession.getInstance().clearSession();
         javax.swing.JOptionPane.showMessageDialog(this, "Berhasil logout!");
         new Register.LoginPage().setVisible(true);
         this.dispose();
-    }
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -471,5 +514,6 @@ public class RequestPengembalian extends javax.swing.JFrame {
     private javax.swing.JPanel panelListKembali;
     private javax.swing.JButton reqpeminjaman;
     private javax.swing.JButton reqpengembalian;
+    private javax.swing.JButton manajemendenda;
     // End of variables declaration//GEN-END:variables
 }

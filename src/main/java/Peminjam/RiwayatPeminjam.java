@@ -119,6 +119,26 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         lblStatus.setBounds(470, 17, 150, 20);
         panel.add(lblStatus);
         
+        // Tambahkan tombol info jika ada keterangan admin (untuk pengembalian ditolak)
+        if ("pengembalian_ditolak".equalsIgnoreCase(status) && 
+            item.getKeteranganAdmin() != null && 
+            !item.getKeteranganAdmin().trim().isEmpty()) {
+            
+            javax.swing.JButton btnInfo = new javax.swing.JButton("ℹ");
+            btnInfo.setFont(new java.awt.Font("Segoe UI", 1, 12));
+            btnInfo.setForeground(java.awt.Color.WHITE);
+            btnInfo.setBackground(new java.awt.Color(255, 102, 102));
+            btnInfo.setBounds(622, 15, 30, 25);
+            btnInfo.setToolTipText("Lihat keterangan admin");
+            btnInfo.addActionListener(e -> {
+                javax.swing.JOptionPane.showMessageDialog(this,
+                    "Alasan penolakan:\n" + item.getKeteranganAdmin(),
+                    "Keterangan Admin",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            });
+            panel.add(btnInfo);
+        }
+        
         javax.swing.JLabel lblDenda = new javax.swing.JLabel("-");
         lblDenda.setFont(fontIsi);
         
@@ -201,6 +221,7 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -409,8 +430,25 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipadx = 102;
         gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 35);
+        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 0);
         jPanel4.add(jButton3, gridBagConstraints);
+
+        jButton5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton5.setText("Denda Saya");
+        jButton5.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 70;
+        gridBagConstraints.ipady = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 35);
+        jPanel4.add(jButton5, gridBagConstraints);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -470,6 +508,11 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        new DashboardDenda().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton5ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -499,6 +542,7 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;

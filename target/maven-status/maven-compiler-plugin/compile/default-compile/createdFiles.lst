@@ -5,6 +5,7 @@ Model\RequestData.class
 Peminjam\DashboardPeminjam$7.class
 Admin\DashboardAdmin$7.class
 Peminjam\DashboardPeminjam$4.class
+Peminjam\ProfilPeminjam$5.class
 Admin\LogPeminjaman$5.class
 Peminjam\DetailBarang$7.class
 Peminjam\lblKategori.class
@@ -14,6 +15,7 @@ Admin\LogPeminjaman$8.class
 Peminjam\FormPengembalian$1.class
 DAO\PeminjamanDAO.class
 Utils\SessionHelper.class
+Admin\RequestPengembalian$9.class
 Admin\DashboardAdmin$4.class
 Admin\editbarang$12.class
 Admin\tambahbarang$12.class
@@ -28,16 +30,19 @@ Peminjam\RiwayatPeminjam$1.class
 Admin\editbarang$8.class
 Admin\hapusbarang$10.class
 Admin\tambahbarang$2.class
+Admin\RequestPeminjaman$9.class
 Register\LoginPage$3.class
 Admin\DashboardAdmin.class
 Utils\UserSession.class
 Admin\RequestPengembalian$7.class
 Admin\tambahbarang$5.class
 Admin\LogPeminjaman$2.class
+Peminjam\RiwayatPeminjam$4.class
 Admin\tambahbarang$8.class
 Admin\DashboardAdmin$5.class
 Model\Denda.class
 Peminjam\DetailBarang$2.class
+Admin\editbarang$14.class
 Admin\hapusbarang$13.class
 Peminjam\DetailBarang.class
 Admin\hapusbarang$1.class
@@ -55,9 +60,11 @@ Peminjam\DashboardPeminjam$6.class
 Peminjam\DetailBarang$1.class
 Admin\formeditbarang$1.class
 Admin\RequestPeminjaman.class
+Peminjam\DetailBarang$8.class
 Peminjam\DetailRiwayat.class
 Admin\LogPeminjaman$4.class
 Peminjam\RiwayatPeminjam$3.class
+Admin\hapusbarang$14.class
 Peminjam\ProfilPeminjam.class
 Admin\editbarang.class
 Admin\RequestPeminjaman$7.class
@@ -68,6 +75,7 @@ Admin\tambahbarang$3.class
 Peminjam\DashboardPeminjam$5.class
 Peminjam\ProfilPeminjam$2.class
 Admin\RequestPeminjaman$1.class
+Peminjam\DashboardPeminjam$10.class
 Admin\editbarang$6.class
 Peminjam\FormPengembalian$1$1.class
 Admin\editbarang$4.class
@@ -78,6 +86,7 @@ Admin\hapusbarang$11.class
 Service\PeminjamanService.class
 Admin\tambahbarang$6.class
 Register\LoginPage$1.class
+Admin\RequestPengembalian$8.class
 Peminjam\ProfilPeminjam$1.class
 DAO\AdminDAO.class
 Model\LogData.class
@@ -100,9 +109,11 @@ Admin\tambahbarang$10.class
 Utils\NavigationHelper.class
 Admin\editbarang$10.class
 Admin\DashboardAdmin$3.class
+Admin\LogPeminjaman$9.class
 Admin\hapusbarang$4.class
 Admin\formeditbarang$2.class
 Peminjam\DetailBarang$6.class
+Admin\tambahbarang$13.class
 Peminjam\DetailRiwayat$1.class
 Admin\editbarang$1.class
 Admin\hapusbarang$7.class
@@ -120,6 +131,7 @@ Admin\DashboardAdmin$1.class
 Admin\editbarang$2.class
 Admin\LogPeminjaman.class
 Admin\RequestPeminjaman$5.class
+Admin\DashboardAdmin$9.class
 Peminjam\DetailBarang$5.class
 Peminjam\FormPengembalian.class
 Admin\RequestPengembalian.class

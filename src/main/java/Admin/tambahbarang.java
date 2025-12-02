@@ -16,12 +16,21 @@ public class tambahbarang extends javax.swing.JFrame {
      * Creates new form dashboardadmin
      */
     public tambahbarang() {
-        if (!SessionHelper.checkAdmin(this)) return;
+        System.out.println("CONSTRUCTOR TAMBAHBARANG DIPANGGIL!"); // DEBUG
         initComponents();
+        System.out.println("initComponents() SELESAI"); // DEBUG
         setLocationRelativeTo(null);
-        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH); // Fullscreen
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         
-        isiComboKategori();
+        try {
+            isiComboKategori();
+            System.out.println("isiComboKategori() SELESAI"); // DEBUG
+        } catch (Exception ex) {
+            System.err.println("Error loading kategori: " + ex.getMessage());
+            ex.printStackTrace();
+            cmbKategori.addItem("- Error loading data -");
+        }
+        System.out.println("CONSTRUCTOR TAMBAHBARANG SELESAI!"); // DEBUG
     }
     
     private void isiComboKategori() {
@@ -56,6 +65,7 @@ public class tambahbarang extends javax.swing.JFrame {
         logpeminjaman = new javax.swing.JButton();
         reqpeminjaman = new javax.swing.JButton();
         reqpengembalian = new javax.swing.JButton();
+        manajemendenda = new javax.swing.JButton();
         addbarang1 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -163,6 +173,18 @@ public class tambahbarang extends javax.swing.JFrame {
             }
         });
 
+        manajemendenda.setBackground(new java.awt.Color(60, 63, 65));
+        manajemendenda.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        manajemendenda.setForeground(new java.awt.Color(255, 255, 255));
+        manajemendenda.setText("Manajemen Denda");
+        manajemendenda.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        manajemendenda.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        manajemendenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manajemendendaActionPerformed(evt);
+            }
+        });
+
         addbarang1.setBackground(new java.awt.Color(60, 63, 65));
         addbarang1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         addbarang1.setForeground(new java.awt.Color(255, 255, 255));
@@ -195,6 +217,7 @@ public class tambahbarang extends javax.swing.JFrame {
             .addComponent(logpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(reqpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(reqpengembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 170, Short.MAX_VALUE)
+            .addComponent(manajemendenda, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(addbarang1, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
@@ -218,6 +241,8 @@ public class tambahbarang extends javax.swing.JFrame {
                 .addComponent(reqpeminjaman, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(reqpengembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(manajemendenda, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32)
                 .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -389,9 +414,13 @@ public class tambahbarang extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_reqpengembalianActionPerformed
 
-    private void addbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarangActionPerformed
-        new DashboardAdmin().setVisible(true);
+    private void manajemendendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manajemendendaActionPerformed
+        new ManajemenDenda().setVisible(true);
         this.dispose();
+    }//GEN-LAST:event_manajemendendaActionPerformed
+
+    private void addbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarangActionPerformed
+        // Sudah di halaman tambah barang, tidak perlu navigasi
     }//GEN-LAST:event_addbarangActionPerformed
 
     private void txtNamaBarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNamaBarangActionPerformed
@@ -517,6 +546,7 @@ public class tambahbarang extends javax.swing.JFrame {
     private javax.swing.JButton logpeminjaman;
     private javax.swing.JButton reqpeminjaman;
     private javax.swing.JButton reqpengembalian;
+    private javax.swing.JButton manajemendenda;
     private javax.swing.JSpinner spnStok;
     private java.awt.TextField txtNamaBarang;
     // End of variables declaration//GEN-END:variables

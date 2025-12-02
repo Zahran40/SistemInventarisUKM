@@ -203,6 +203,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         jButton4 = new javax.swing.JButton();
         jLabel21 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
+        jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
@@ -269,8 +270,25 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         gridBagConstraints.ipadx = 102;
         gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 35);
+        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 0);
         jPanel4.add(jButton3, gridBagConstraints);
+
+        jButton5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton5.setText("Denda Saya");
+        jButton5.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 70;
+        gridBagConstraints.ipady = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 35);
+        jPanel4.add(jButton5, gridBagConstraints);
 
         jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
         jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -282,7 +300,13 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("DAFTAR BARANG");
-        jPanel3.add(jLabel2, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(32, 18, 0, 0);
+        jPanel3.add(jLabel2, gridBagConstraints);
 
         txtSearch.setText("Cari Nama Barang");
         txtSearch.setMaximumSize(new java.awt.Dimension(200, 30));
@@ -298,7 +322,13 @@ public class DashboardPeminjam extends javax.swing.JFrame {
                 txtSearchKeyReleased(evt);
             }
         });
-        jPanel3.add(txtSearch, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 117, 0, 0);
+        jPanel3.add(txtSearch, gridBagConstraints);
 
         cmbKategori.setMinimumSize(new java.awt.Dimension(100, 30));
         cmbKategori.setPreferredSize(new java.awt.Dimension(100, 30));
@@ -312,7 +342,14 @@ public class DashboardPeminjam extends javax.swing.JFrame {
                 cmbKategoriActionPerformed(evt);
             }
         });
-        jPanel3.add(cmbKategori, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 18, 0, 0);
+        jPanel3.add(cmbKategori, gridBagConstraints);
 
         panelDaftarBarang.setLayout(new java.awt.GridBagLayout());
 
@@ -384,12 +421,18 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         panelDaftarBarang.add(jLabel21, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 44, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(37, 117, 272, 0);
         jPanel3.add(panelDaftarBarang, gridBagConstraints);
-        jPanel3.add(jSeparator2, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipady = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel3.add(jSeparator2, gridBagConstraints);
 
         jScrollPane1.setViewportView(jPanel3);
 
@@ -398,7 +441,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 956, Short.MAX_VALUE)
+            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -445,6 +488,18 @@ public class DashboardPeminjam extends javax.swing.JFrame {
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // Navigasi ke detail barang
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        // Navigasi ke Dashboard Denda
+        System.out.println("Tombol Denda Saya diklik!"); // Debug
+        try {
+            new DashboardDenda().setVisible(true);
+            this.dispose();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }//GEN-LAST:event_jButton5ActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         // TODO add your handling code here:
@@ -499,6 +554,7 @@ public class DashboardPeminjam extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel21;

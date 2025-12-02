@@ -15,6 +15,7 @@ public class DashboardDenda extends javax.swing.JFrame {
     
     private int userId;
     private DendaService dendaService;
+    private JLabel lblAmount; // Instance variable untuk total denda
     
     public DashboardDenda() {
         // Check session
@@ -41,32 +42,115 @@ public class DashboardDenda extends javax.swing.JFrame {
         setTitle("Denda Saya");
         setLayout(new BorderLayout());
         
-        // Top Panel - Summary
-        JPanel topPanel = new JPanel();
-        topPanel.setBackground(new Color(220, 53, 69)); // Red
-        topPanel.setPreferredSize(new Dimension(getWidth(), 120));
-        topPanel.setLayout(null);
+        // Top Panel - Header
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(new Color(0, 204, 0));
+        headerPanel.setPreferredSize(new Dimension(getWidth(), 67));
+        headerPanel.setLayout(null);
+        
+        JLabel lblHeader = new JLabel("SiUkm - Sistem Inventaris UKM");
+        lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblHeader.setForeground(Color.WHITE);
+        lblHeader.setBounds(0, 0, 800, 67);
+        lblHeader.setHorizontalAlignment(SwingConstants.CENTER);
+        headerPanel.add(lblHeader);
+        
+        add(headerPanel, BorderLayout.NORTH);
+        
+        // Main Container
+        JPanel mainContainer = new JPanel();
+        mainContainer.setLayout(new BorderLayout());
+        
+        // Navigation Panel
+        JPanel navPanel = new JPanel();
+        navPanel.setLayout(new GridBagLayout());
+        navPanel.setPreferredSize(new Dimension(getWidth(), 70));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+        gbc.ipadx = 87;
+        gbc.ipady = 8;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        
+        // Catalog Button
+        JButton btnCatalog = new JButton("Catalog");
+        btnCatalog.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnCatalog.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnCatalog.addActionListener(e -> {
+            new DashboardPeminjam().setVisible(true);
+            this.dispose();
+        });
+        gbc.gridx = 0;
+        gbc.insets = new Insets(14, 42, 24, 0);
+        navPanel.add(btnCatalog, gbc);
+        
+        // Riwayat Button
+        JButton btnRiwayat = new JButton("Riwayat");
+        btnRiwayat.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnRiwayat.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnRiwayat.addActionListener(e -> {
+            new RiwayatPeminjam().setVisible(true);
+            this.dispose();
+        });
+        gbc.gridx = 1;
+        gbc.ipadx = 85;
+        gbc.insets = new Insets(14, 89, 24, 0);
+        navPanel.add(btnRiwayat, gbc);
+        
+        // Profil Button
+        JButton btnProfil = new JButton("Profil");
+        btnProfil.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnProfil.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnProfil.addActionListener(e -> {
+            new ProfilPeminjam().setVisible(true);
+            this.dispose();
+        });
+        gbc.gridx = 2;
+        gbc.ipadx = 102;
+        gbc.insets = new Insets(14, 93, 24, 0);
+        navPanel.add(btnProfil, gbc);
+        
+        // Denda Saya Button (Current - highlighted)
+        JButton btnDenda = new JButton("Denda Saya");
+        btnDenda.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnDenda.setBackground(new Color(0, 153, 0));
+        btnDenda.setForeground(Color.WHITE);
+        btnDenda.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        gbc.gridx = 3;
+        gbc.ipadx = 70;
+        gbc.insets = new Insets(14, 93, 24, 35);
+        navPanel.add(btnDenda, gbc);
+        
+        mainContainer.add(navPanel, BorderLayout.NORTH);
+        
+        // Summary Panel - Total Denda
+        JPanel summaryPanel = new JPanel();
+        summaryPanel.setBackground(new Color(220, 53, 69)); // Red
+        summaryPanel.setPreferredSize(new Dimension(getWidth(), 100));
+        summaryPanel.setLayout(null);
         
         JLabel lblTitle = new JLabel("DENDA KETERLAMBATAN");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(Color.WHITE);
-        lblTitle.setBounds(50, 20, 400, 30);
-        topPanel.add(lblTitle);
+        lblTitle.setBounds(50, 15, 400, 30);
+        summaryPanel.add(lblTitle);
         
         JLabel lblTotal = new JLabel("Total Denda Belum Bayar:");
         lblTotal.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblTotal.setForeground(Color.WHITE);
-        lblTotal.setBounds(50, 60, 200, 25);
-        topPanel.add(lblTotal);
+        lblTotal.setBounds(50, 50, 200, 25);
+        summaryPanel.add(lblTotal);
         
         int totalDenda = dendaService.getTotalDendaBelumBayar(userId);
-        JLabel lblAmount = new JLabel(String.format("Rp %,d", totalDenda));
+        lblAmount = new JLabel(String.format("Rp %,d", totalDenda));
         lblAmount.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblAmount.setForeground(Color.YELLOW);
-        lblAmount.setBounds(250, 55, 300, 30);
-        topPanel.add(lblAmount);
+        lblAmount.setBounds(250, 48, 300, 30);
+        summaryPanel.add(lblAmount);
         
-        add(topPanel, BorderLayout.NORTH);
+        // Content Panel with Summary and Data
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.add(summaryPanel, BorderLayout.NORTH);
         
         // Center Panel - List Denda
         JPanel centerPanel = new JPanel();
@@ -74,18 +158,18 @@ public class DashboardDenda extends javax.swing.JFrame {
         centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         // Header
-        JPanel headerPanel = new JPanel(new GridLayout(1, 6, 10, 0));
-        headerPanel.setPreferredSize(new Dimension(getWidth(), 40));
-        headerPanel.setBackground(Color.LIGHT_GRAY);
+        JPanel headerListPanel = new JPanel(new GridLayout(1, 6, 10, 0));
+        headerListPanel.setPreferredSize(new Dimension(getWidth(), 40));
+        headerListPanel.setBackground(Color.LIGHT_GRAY);
         
         String[] headers = {"Nama Barang", "Hari Telat", "Jumlah Denda", "Tanggal Hitung", "Status", "Tanggal Bayar"};
         for (String header : headers) {
             JLabel lbl = new JLabel(header, SwingConstants.CENTER);
             lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            headerPanel.add(lbl);
+            headerListPanel.add(lbl);
         }
         
-        centerPanel.add(headerPanel, BorderLayout.NORTH);
+        centerPanel.add(headerListPanel, BorderLayout.NORTH);
         
         // Data Panel
         JPanel dataPanel = new JPanel();
@@ -95,22 +179,20 @@ public class DashboardDenda extends javax.swing.JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         
-        add(centerPanel, BorderLayout.CENTER);
+        contentPanel.add(centerPanel, BorderLayout.CENTER);
+        mainContainer.add(contentPanel, BorderLayout.CENTER);
+        
+        add(mainContainer, BorderLayout.CENTER);
         
         // Bottom Panel - Buttons
         JPanel bottomPanel = new JPanel();
         bottomPanel.setPreferredSize(new Dimension(getWidth(), 60));
-        
-        JButton btnKembali = new JButton("Kembali");
-        btnKembali.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnKembali.addActionListener(e -> {
-            new DashboardPeminjam().setVisible(true);
-            this.dispose();
-        });
-        bottomPanel.add(btnKembali);
+        bottomPanel.setBackground(Color.WHITE);
         
         JButton btnRefresh = new JButton("Refresh");
         btnRefresh.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnRefresh.setBackground(new Color(0, 153, 0));
+        btnRefresh.setForeground(Color.WHITE);
         btnRefresh.addActionListener(e -> loadDendaData());
         bottomPanel.add(btnRefresh);
         
@@ -118,10 +200,12 @@ public class DashboardDenda extends javax.swing.JFrame {
     }
     
     private void loadDendaData() {
-        // Get data panel
+        // Get data panel - navigate through the correct component hierarchy
         Container contentPane = getContentPane();
-        JPanel centerPanel = (JPanel) contentPane.getComponent(1);
-        JScrollPane scrollPane = (JScrollPane) centerPanel.getComponent(1);
+        JPanel mainContainer = (JPanel) contentPane.getComponent(1); // mainContainer (CENTER of JFrame)
+        JPanel contentPanel = (JPanel) mainContainer.getComponent(1); // contentPanel (CENTER of mainContainer, after navPanel[0])
+        JPanel centerPanel = (JPanel) contentPanel.getComponent(1); // centerPanel (CENTER of contentPanel, after summaryPanel[0])
+        JScrollPane scrollPane = (JScrollPane) centerPanel.getComponent(1); // scrollPane (CENTER of centerPanel, after headerListPanel[0])
         JPanel dataPanel = (JPanel) scrollPane.getViewport().getView();
         
         dataPanel.removeAll();
@@ -177,10 +261,6 @@ public class DashboardDenda extends javax.swing.JFrame {
     }
     
     private void updateTotalDenda() {
-        Container contentPane = getContentPane();
-        JPanel topPanel = (JPanel) contentPane.getComponent(0);
-        JLabel lblAmount = (JLabel) topPanel.getComponent(3);
-        
         int totalDenda = dendaService.getTotalDendaBelumBayar(userId);
         lblAmount.setText(String.format("Rp %,d", totalDenda));
     }

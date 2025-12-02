@@ -20,6 +20,7 @@ public class RequestData {
     private String keterangan; 
     private String status;
     private String buktiValidasi;
+    private String keteranganAdmin; // Keterangan dari admin saat tolak pengembalian
 
     // Constructor Kosong
     public RequestData() {}
@@ -57,4 +58,7 @@ public class RequestData {
     
     public String getStatus() { return status; } 
     public void setStatus(String status) { this.status = status; }
+    
+    public String getKeteranganAdmin() { return keteranganAdmin; }
+    public void setKeteranganAdmin(String keteranganAdmin) { this.keteranganAdmin = keteranganAdmin; }
 }

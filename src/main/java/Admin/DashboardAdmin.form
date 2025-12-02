@@ -329,6 +329,7 @@
                       <Component id="logpeminjaman" alignment="0" max="32767" attributes="0"/>
                       <Component id="reqpeminjaman" alignment="0" max="32767" attributes="0"/>
                       <Component id="reqpengembalian" alignment="0" max="32767" attributes="0"/>
+                      <Component id="manajemendenda" alignment="0" max="32767" attributes="0"/>
                       <Component id="addbarang1" alignment="1" max="32767" attributes="0"/>
                       <Component id="jButton1" alignment="0" max="32767" attributes="0"/>
                   </Group>
@@ -353,6 +354,8 @@
                   <Component id="reqpeminjaman" min="-2" pref="32" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="reqpengembalian" min="-2" pref="32" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="manajemendenda" min="-2" pref="32" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="jButton1" min="-2" pref="34" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
@@ -473,6 +476,25 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reqpengembalianActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="manajemendenda">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="41" green="3f" red="3c" type="rgb"/>
+            </Property>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Segoe UI" size="12" style="1"/>
+            </Property>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="ff" green="ff" red="ff" type="rgb"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Manajemen Denda"/>
+            <Property name="horizontalAlignment" type="int" value="2"/>
+            <Property name="horizontalTextPosition" type="int" value="2"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manajemendendaActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="addbarang1">

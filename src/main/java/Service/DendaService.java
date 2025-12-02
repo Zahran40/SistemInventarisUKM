@@ -19,9 +19,10 @@ public class DendaService {
     /**
      * Hitung denda berdasarkan keterlambatan
      * @param idPeminjaman ID peminjaman
+     * @param tanggalKembali Tanggal pengembalian barang (untuk menghitung denda yang tepat)
      * @return Denda object atau null jika tidak telat
      */
-    public Denda hitungDenda(int idPeminjaman) {
+    public Denda hitungDenda(int idPeminjaman, Date tanggalKembali) {
         String sql = "SELECT p.id_peminjaman, p.id_user, p.tanggal_jatuh_tempo, p.status " +
                      "FROM peminjaman p " +
                      "WHERE p.id_peminjaman = ? AND p.status = 'disetujui'";
@@ -37,15 +38,16 @@ public class DendaService {
                 int idUser = rs.getInt("id_user");
                 
                 LocalDate jatuhTempo = tanggalJatuhTempo.toLocalDate();
-                LocalDate sekarang = LocalDate.now();
+                LocalDate tanggalDikembalikan = tanggalKembali.toLocalDate();
                 
-                // Hitung hari telat
-                long hariTelat = ChronoUnit.DAYS.between(jatuhTempo, sekarang);
+                // Hitung hari telat BERDASARKAN TANGGAL PENGEMBALIAN
+                // Bukan tanggal hari ini, jadi denda tidak bertambah setelah dikembalikan
+                long hariTelat = ChronoUnit.DAYS.between(jatuhTempo, tanggalDikembalikan);
                 
                 if (hariTelat > 0) {
                     int jumlahDenda = (int) hariTelat * DENDA_PER_HARI;
                     Denda denda = new Denda(idPeminjaman, idUser, jumlahDenda, (int) hariTelat);
-                    denda.setKeterangan("Terlambat " + hariTelat + " hari");
+                    denda.setKeterangan("Terlambat " + hariTelat + " hari (dikembalikan " + tanggalDikembalikan + ")");
                     return denda;
                 }
             }

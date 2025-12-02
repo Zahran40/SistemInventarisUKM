@@ -25,7 +25,6 @@ import javax.swing.JPanel;
 public class hapusbarang extends javax.swing.JFrame {
 
     public hapusbarang() {
-        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
@@ -155,6 +154,7 @@ public class hapusbarang extends javax.swing.JFrame {
         logpeminjaman = new javax.swing.JButton();
         reqpeminjaman = new javax.swing.JButton();
         reqpengembalian = new javax.swing.JButton();
+        manajemendenda = new javax.swing.JButton();
         addbarang1 = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -248,6 +248,18 @@ public class hapusbarang extends javax.swing.JFrame {
             }
         });
 
+        manajemendenda.setBackground(new java.awt.Color(60, 63, 65));
+        manajemendenda.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        manajemendenda.setForeground(new java.awt.Color(255, 255, 255));
+        manajemendenda.setText("Manajemen Denda");
+        manajemendenda.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        manajemendenda.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        manajemendenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manajemendendaActionPerformed(evt);
+            }
+        });
+
         addbarang1.setBackground(new java.awt.Color(60, 63, 65));
         addbarang1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         addbarang1.setForeground(new java.awt.Color(255, 255, 255));
@@ -282,7 +294,8 @@ public class hapusbarang extends javax.swing.JFrame {
                     .addComponent(hapusbarang, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(logpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(reqpeminjaman, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(reqpengembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 170, Short.MAX_VALUE)
+                    .addComponent(reqpengembalian, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                    .addComponent(manajemendenda, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addbarang1, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
                     .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -304,6 +317,8 @@ public class hapusbarang extends javax.swing.JFrame {
                 .addComponent(reqpeminjaman, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(reqpengembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(manajemendenda, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -326,7 +341,6 @@ public class hapusbarang extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 171, 0, 0);
         jPanel4.add(jLabel2, gridBagConstraints);
 
-        txtSearch.setText("Cari Nama Barang");
         txtSearch.setMaximumSize(new java.awt.Dimension(200, 30));
         txtSearch.setMinimumSize(new java.awt.Dimension(200, 30));
         txtSearch.setPreferredSize(new java.awt.Dimension(200, 30));
@@ -423,8 +437,7 @@ public class hapusbarang extends javax.swing.JFrame {
     }//GEN-LAST:event_editbarangActionPerformed
 
     private void hapusbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hapusbarangActionPerformed
-        new DashboardAdmin().setVisible(true);
-        this.dispose();
+        // Sudah di halaman hapus barang, tidak perlu navigasi
     }//GEN-LAST:event_hapusbarangActionPerformed
 
     private void logpeminjamanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logpeminjamanActionPerformed
@@ -441,6 +454,11 @@ public class hapusbarang extends javax.swing.JFrame {
         new RequestPengembalian().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_reqpengembalianActionPerformed
+
+    private void manajemendendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manajemendendaActionPerformed
+        new ManajemenDenda().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_manajemendendaActionPerformed
 
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
         new DashboardAdmin().setVisible(true);
@@ -529,6 +547,7 @@ public class hapusbarang extends javax.swing.JFrame {
     private javax.swing.JPanel panelListBarang;
     private javax.swing.JButton reqpeminjaman;
     private javax.swing.JButton reqpengembalian;
+    private javax.swing.JButton manajemendenda;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }

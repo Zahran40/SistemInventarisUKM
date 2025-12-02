@@ -121,6 +121,7 @@ public class DetailBarang extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -500,8 +501,25 @@ public class DetailBarang extends javax.swing.JFrame {
         gridBagConstraints.ipadx = 102;
         gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 35);
+        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 0);
         jPanel4.add(jButton3, gridBagConstraints);
+
+        jButton6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton6.setText("Denda Saya");
+        jButton6.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 70;
+        gridBagConstraints.ipady = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 93, 24, 35);
+        jPanel4.add(jButton6, gridBagConstraints);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -571,6 +589,11 @@ public class DetailBarang extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton9ActionPerformed
 
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        new DashboardDenda().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton6ActionPerformed
+
     private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
         // 1. Ambil Inputan User
         int jumlahPinjam = (int) jSpinner1.getValue();
@@ -617,17 +640,51 @@ public class DetailBarang extends javax.swing.JFrame {
                 return;
             }
     
-            // 5. CEK DENDA BELUM BAYAR (BLOCKING SYSTEM)
+            // 5A. CEK JUMLAH PEMINJAMAN AKTIF (MAKSIMAL 2)
+            DAO.PeminjamanDAO peminjamanDAO = new DAO.PeminjamanDAO();
+            int jumlahPeminjamanAktif = peminjamanDAO.hitungPeminjamanAktif(idUser);
+            
+            if (jumlahPeminjamanAktif >= 2) {
+                int pilihan = javax.swing.JOptionPane.showConfirmDialog(this, 
+                    "⚠️ BATAS PEMINJAMAN TERCAPAI!\n\n" +
+                    "Anda sudah memiliki " + jumlahPeminjamanAktif + " peminjaman aktif.\n" +
+                    "Batas maksimal: 2 peminjaman aktif\n\n" +
+                    "⚠️ Anda harus mengembalikan barang terlebih dahulu\n" +
+                    "sebelum dapat meminjam barang baru.\n\n" +
+                    "Ingin melihat daftar peminjaman aktif?",
+                    "Peminjaman Diblokir - Batas Maksimal Tercapai",
+                    javax.swing.JOptionPane.YES_NO_OPTION,
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+                
+                if (pilihan == javax.swing.JOptionPane.YES_OPTION) {
+                    // Buka halaman Riwayat
+                    new RiwayatPeminjam().setVisible(true);
+                    this.dispose();
+                }
+                return;
+            }
+            
+            // 5B. CEK DENDA BELUM BAYAR (BLOCKING SYSTEM)
             Service.DendaService dendaService = new Service.DendaService();
             int totalDenda = dendaService.getTotalDendaBelumBayar(idUser);
             
             if (totalDenda > 0) {
-                javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Anda tidak dapat meminjam barang!\n" +
-                    "Anda memiliki denda yang belum dibayar: " + String.format("Rp %,d", totalDenda) + "\n\n" +
-                    "Silakan hubungi admin untuk melunasi denda terlebih dahulu.",
-                    "Peminjaman Diblokir",
+                int pilihan = javax.swing.JOptionPane.showConfirmDialog(this, 
+                    "❌ PEMINJAMAN DIBLOKIR!\n\n" +
+                    "Anda memiliki denda yang belum dibayar:\n" +
+                    String.format("💰 Rp %,d", totalDenda) + "\n\n" +
+                    "⚠️ Anda tidak dapat meminjam barang baru sebelum\n" +
+                    "melunasi denda yang ada.\n\n" +
+                    "Ingin melihat detail denda?",
+                    "Peminjaman Diblokir - Ada Denda Belum Bayar",
+                    javax.swing.JOptionPane.YES_NO_OPTION,
                     javax.swing.JOptionPane.WARNING_MESSAGE);
+                
+                if (pilihan == javax.swing.JOptionPane.YES_OPTION) {
+                    // Buka halaman Denda Saya
+                    new DashboardDenda().setVisible(true);
+                    this.dispose();
+                }
                 return;
             }
             
@@ -739,6 +796,7 @@ public class DetailBarang extends javax.swing.JFrame {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel19;
