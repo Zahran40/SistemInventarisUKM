@@ -4,11 +4,15 @@
  */
 package DAO;
 
-import Database.DatabaseConnection;
-import Model.RequestData;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import Database.DatabaseConnection;
 
 /**
  *
@@ -345,10 +349,27 @@ public class AdminDAO {
                         Model.Denda denda = dendaService.hitungDenda(idPeminjaman, tanggalKembali);
                         
                         if (denda != null) {
-                            // Ada keterlambatan, simpan denda
-                            boolean dendaSaved = dendaService.simpanDenda(denda);
-                            System.out.println("DENDA CREATED: " + denda.getJumlahDendaFormatted() + 
-                                             " untuk user ID " + idUser + " (Saved: " + dendaSaved + ")");
+                            // FIXED: Cek apakah denda sudah ada di tabel (hindari duplikasi)
+                            String sqlCekDenda = "SELECT COUNT(*) as jumlah FROM denda WHERE id_peminjaman = ?";
+                            java.sql.PreparedStatement psCekDenda = conn.prepareStatement(sqlCekDenda);
+                            psCekDenda.setInt(1, idPeminjaman);
+                            java.sql.ResultSet rsCek = psCekDenda.executeQuery();
+                            
+                            boolean dendaSudahAda = false;
+                            if (rsCek.next()) {
+                                dendaSudahAda = rsCek.getInt("jumlah") > 0;
+                            }
+                            rsCek.close();
+                            psCekDenda.close();
+                            
+                            if (!dendaSudahAda) {
+                                // Ada keterlambatan dan belum ada record denda, simpan denda
+                                boolean dendaSaved = dendaService.simpanDenda(denda);
+                                System.out.println("DENDA CREATED: " + denda.getJumlahDendaFormatted() + 
+                                                 " untuk user ID " + idUser + " (Saved: " + dendaSaved + ")");
+                            } else {
+                                System.out.println("DEBUG - Denda sudah ada di tabel, skip insert");
+                            }
                         } else {
                             System.out.println("DEBUG - Tidak ada keterlambatan");
                         }
@@ -456,4 +477,151 @@ public class AdminDAO {
         }
         return imageFile;
     }
+    
+    /**
+     * Method untuk mengambil semua data peminjam (user dengan role='user')
+     * @return List berisi semua user peminjam
+     */
+    public List<Model.User> getAllPeminjam() {
+        List<Model.User> listUser = new ArrayList<>();
+        String sql = "SELECT id_user, NIM, nama_user, password, email, kontak, role " +
+                     "FROM users WHERE role = 'peminjam' ORDER BY nama_user ASC";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                Model.User user = new Model.User();
+                user.setIdUser(rs.getInt("id_user"));
+                user.setNim(rs.getString("NIM"));
+                user.setNama(rs.getString("nama_user"));
+                user.setPassword(rs.getString("password"));
+                user.setEmail(rs.getString("email"));
+                user.setNoHp(rs.getString("kontak"));
+                user.setAlamat(""); // alamat tidak ada di database
+                user.setRole(rs.getString("role"));
+                listUser.add(user);
+            }
+        } catch (SQLException e) {
+            System.out.println("ERROR getAllPeminjam: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return listUser;
+    }
+    
+    /**
+     * Method untuk mengambil data user berdasarkan ID
+     * @param idUser ID user yang ingin diambil
+     * @return Object User atau null jika tidak ditemukan
+     */
+    public Model.User getUserById(int idUser) {
+        Model.User user = null;
+        String sql = "SELECT id_user, NIM, nama_user, password, email, kontak, role " +
+                     "FROM users WHERE id_user = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, idUser);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    user = new Model.User();
+                    user.setIdUser(rs.getInt("id_user"));
+                    user.setNim(rs.getString("NIM"));
+                    user.setNama(rs.getString("nama_user"));
+                    user.setPassword(rs.getString("password"));
+                    user.setEmail(rs.getString("email"));
+                    user.setNoHp(rs.getString("kontak"));
+                    user.setAlamat(""); // alamat tidak ada di database
+                    user.setRole(rs.getString("role"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ERROR getUserById: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return user;
+    }
+    
+    /**
+     * Method untuk menambah user baru (peminjam)
+     * @param user Object User yang akan ditambahkan
+     * @return true jika berhasil, false jika gagal
+     */
+    public boolean tambahUser(Model.User user) {
+        String sql = "INSERT INTO users (NIM, nama_user, password, email, kontak, role) " +
+                     "VALUES (?, ?, ?, ?, ?, 'peminjam')";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, user.getNim());
+            ps.setString(2, user.getNama());
+            ps.setString(3, user.getPassword());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getNoHp());
+            
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.out.println("ERROR tambahUser: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Method untuk cek apakah NIM sudah ada di database
+     * @param nim NIM yang akan dicek
+     * @return true jika sudah ada, false jika belum
+     */
+    public boolean cekNimExist(String nim) {
+        String sql = "SELECT COUNT(*) as jumlah FROM users WHERE NIM = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, nim);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("jumlah") > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ERROR cekNimExist: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Method untuk cek apakah Email sudah ada di database
+     * @param email Email yang akan dicek
+     * @return true jika sudah ada, false jika belum
+     */
+    public boolean cekEmailExist(String email) {
+        String sql = "SELECT COUNT(*) as jumlah FROM users WHERE email = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("jumlah") > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ERROR cekEmailExist: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
 }
+

@@ -75,35 +75,58 @@ public class DashboardAdmin extends javax.swing.JFrame {
         Connection conn = DatabaseConnection.getConnection();
         
         try {
-            // 1. MENGHITUNG TOTAL STOK (Menjumlahkan kolom 'stok')
-            String sqlStok = "SELECT SUM(stok) AS total_stok FROM barang";
+            // 1. MENGHITUNG TOTAL STOK
+            String sqlStok = "SELECT COALESCE(SUM(stok), 0) AS total_stok FROM barang";
             PreparedStatement pstStok = conn.prepareStatement(sqlStok);
             ResultSet rsStok = pstStok.executeQuery();
             
+            int totalStok = 0;
             if (rsStok.next()) {
-                // Ambil hasil sum
-                int totalStok = rsStok.getInt("total_stok");
-                // Update jLabel10 (Label Total Stok di GUI Anda)
+                totalStok = rsStok.getInt("total_stok");
                 jLabel10.setText(totalStok + " Barang");
             }
             
-            // 2. MENGHITUNG TOTAL JENIS BARANG (Menghitung jumlah baris data)
+            // 2. MENGHITUNG TOTAL JENIS BARANG
             String sqlJenis = "SELECT COUNT(*) AS total_jenis FROM barang";
             PreparedStatement pstJenis = conn.prepareStatement(sqlJenis);
             ResultSet rsJenis = pstJenis.executeQuery();
             
             if (rsJenis.next()) {
-                // Ambil hasil count
                 int totalJenis = rsJenis.getInt("total_jenis");
-                // Update jLabel14 (Label Total Jenis di GUI Anda)
                 jLabel14.setText(totalJenis + " Jenis");
             }
             
-            // Tutup result set dan statement untuk membersihkan resource
+            // 3. MENGHITUNG BARANG YANG SEDANG DIPINJAM (BELUM DIKEMBALIKAN)
+            String sqlDipinjam = "SELECT COALESCE(SUM(p.jumlah), 0) AS total_dipinjam " +
+                                "FROM peminjaman p " +
+                                "WHERE p.status = 'disetujui' " +
+                                "  AND NOT EXISTS (" +
+                                "      SELECT 1 FROM pengembalian peng " +
+                                "      WHERE peng.id_peminjaman = p.id_peminjaman " +
+                                "        AND peng.status = 'disetujui'" +
+                                "  )";
+            PreparedStatement pstDipinjam = conn.prepareStatement(sqlDipinjam);
+            ResultSet rsDipinjam = pstDipinjam.executeQuery();
+            
+            int totalDipinjam = 0;
+            if (rsDipinjam.next()) {
+                totalDipinjam = rsDipinjam.getInt("total_dipinjam");
+            }
+            // DIPERBAIKI: jLabel15 untuk Barang Dipinjam (MERAH)
+            jLabel15.setText(totalDipinjam + " Barang");
+            
+            // 4. MENGHITUNG BARANG TERSEDIA (Stok - Dipinjam)
+            int totalTersedia = totalStok - totalDipinjam;
+            // DIPERBAIKI: jLabel7 untuk Barang Tersedia (HIJAU)
+            jLabel7.setText(totalTersedia + " Barang");
+            
+            // Tutup resource
             rsStok.close();
             pstStok.close();
             rsJenis.close();
             pstJenis.close();
+            rsDipinjam.close();
+            pstDipinjam.close();
             
         } catch (Exception e) {
             System.err.println("Gagal memuat data dashboard: " + e.getMessage());
@@ -137,6 +160,7 @@ public class DashboardAdmin extends javax.swing.JFrame {
         jPanel10 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         addbarang = new javax.swing.JButton();
         editbarang = new javax.swing.JButton();
@@ -159,11 +183,19 @@ public class DashboardAdmin extends javax.swing.JFrame {
         jPanel2.add(jLabel1, new java.awt.GridBagConstraints());
 
         jPanel4.setBackground(new java.awt.Color(0, 204, 0));
+        jPanel4.setLayout(new java.awt.GridBagLayout());
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Selamat Datang di Dashboard Admin");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(25, 150, 0, 0);
+        jPanel4.add(jLabel2, gridBagConstraints);
 
         jPanel6.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel6.setLayout(new java.awt.GridBagLayout());
@@ -191,6 +223,14 @@ public class DashboardAdmin extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 9, 25, 324);
         jPanel6.add(jLabel7, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 69, 0, 0);
+        jPanel4.add(jPanel6, gridBagConstraints);
+
         jPanel7.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -216,6 +256,15 @@ public class DashboardAdmin extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 9, 40, 22);
         jPanel7.add(jLabel10, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 7;
+        gridBagConstraints.ipady = 37;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(39, 69, 0, 0);
+        jPanel4.add(jPanel7, gridBagConstraints);
 
         jPanel9.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel9.setLayout(new java.awt.GridBagLayout());
@@ -243,6 +292,16 @@ public class DashboardAdmin extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(12, 9, 40, 22);
         jPanel9.add(jLabel14, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.ipadx = 44;
+        gridBagConstraints.ipady = 37;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(39, 6, 0, 0);
+        jPanel4.add(jPanel9, gridBagConstraints);
+
         jPanel10.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
@@ -269,39 +328,32 @@ public class DashboardAdmin extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 9, 25, 324);
         jPanel10.add(jLabel15, gridBagConstraints);
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(150, 150, 150)
-                .addComponent(jLabel2))
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(69, 69, 69)
-                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(6, 6, 6)
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 267, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(69, 69, 69)
-                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(69, 69, 69)
-                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(jLabel2)
-                .addGap(39, 39, 39)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6)
-                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(6, 6, 6)
-                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 69, 0, 0);
+        jPanel4.add(jPanel10, gridBagConstraints);
+
+        jButton2.setBackground(new java.awt.Color(204, 255, 204));
+        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jButton2.setText("Data Pengguna");
+        jButton2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.ipadx = 397;
+        gridBagConstraints.ipady = 13;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 69, 6, 0);
+        jPanel4.add(jButton2, gridBagConstraints);
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -522,10 +574,8 @@ public class DashboardAdmin extends javax.swing.JFrame {
     }//GEN-LAST:event_manajemendendaActionPerformed
 
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
-        // Logout
-        UserSession.getInstance().clearSession();
-        JOptionPane.showMessageDialog(this, "Berhasil logout!");
-        new LoginPage().setVisible(true);
+        // Dashboard - Refresh halaman ini
+        new DashboardAdmin().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_addbarang1ActionPerformed
 
@@ -536,6 +586,12 @@ public class DashboardAdmin extends javax.swing.JFrame {
         new LoginPage().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // Navigasi ke halaman manajemen pengguna
+        new ManajemenPengguna().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -568,6 +624,7 @@ public class DashboardAdmin extends javax.swing.JFrame {
     private javax.swing.JButton editbarang;
     private javax.swing.JButton hapusbarang;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel13;

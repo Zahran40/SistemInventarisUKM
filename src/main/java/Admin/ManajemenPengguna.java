@@ -4,113 +4,101 @@
  */
 package Admin;
 
+import Utils.UserSession;
 import Utils.SessionHelper;
-import DAO.AdminDAO;
-import Model.LogData;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import Register.LoginPage;
-
+import javax.swing.JOptionPane;
+import DAO.AdminDAO;
+import Model.User;
+import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+import java.awt.GridLayout;
+import java.awt.Font;
 
 /**
  *
  * @author ASUS
  */
-public class LogPeminjaman extends javax.swing.JFrame {
+public class ManajemenPengguna extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LogPeminjaman.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ManajemenPengguna.class.getName());
 
     /**
-     * Creates new form LogPeminjaman
+     * Creates new form ManajemenPengguna
      */
-    public LogPeminjaman() {
+    public ManajemenPengguna() {
+        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         
-        loadLogData();
+        // Sembunyikan panel template yang tidak terpakai
+        jPanel5.setVisible(false);
+        jPanel7.setVisible(false);
+        jLabel3.setVisible(false);
+        jLabel4.setVisible(false);
+        jButton3.setVisible(false);
+        
+        loadDataPengguna();
     }
-
-    private void loadLogData() {
+    
+    private void loadDataPengguna() {
+        // Implementasi akan ditambahkan setelah membuat Model.User
         AdminDAO dao = new AdminDAO();
-        List<LogData> logs = dao.getLogPeminjaman();
+        List<User> listUser = dao.getAllPeminjam();
         
-        panelLogContainer.removeAll();
-       
-        panelLogContainer.setLayout(new GridLayout(0, 1, 0, 2));
+        jPanel1.removeAll();
+        jPanel1.setLayout(new GridLayout(0, 1, 0, 10)); // spacing antar row 10px
         
-        int no = 1;
-        for (LogData log : logs){
-            JPanel row = createLogRow(no++, log);
-            panelLogContainer.add(row);
-        }
-        
-        panelLogContainer.revalidate();
-        panelLogContainer.repaint();
-    }
-
-    private javax.swing.JPanel createLogRow(int nomor, Model.LogData log) {
-        javax.swing.JPanel panel = new javax.swing.JPanel();
-        panel.setLayout(null);
-
-        panel.setPreferredSize(new java.awt.Dimension(800, 35)); 
-        panel.setBackground(java.awt.Color.WHITE);
-       
-        panel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(220, 220, 220)));
-
-        // Helper Font
-        java.awt.Font fontIsi = new java.awt.Font("Segoe UI", 0, 14);
-        java.awt.Color textDark = new java.awt.Color(51, 51, 51);
-
-        // 1. Kolom No (Kecil di kiri)
-        javax.swing.JLabel lblNo = new javax.swing.JLabel(String.valueOf(nomor));
-        lblNo.setFont(fontIsi);
-        lblNo.setForeground(textDark);
-        lblNo.setBounds(20, 8, 30, 20);
-        panel.add(lblNo);
-
-        // 2. Kolom Nama Peminjam (Agak lebar)
-        javax.swing.JLabel lblNama = new javax.swing.JLabel(log.getNamaPeminjam());
-        lblNama.setFont(new java.awt.Font("Segoe UI", 1, 14)); // Bold untuk nama
-        lblNama.setForeground(textDark);
-        lblNama.setBounds(60, 8, 180, 20);
-        panel.add(lblNama);
-
-        // 3. Kolom Aktivitas (Paling lebar & Berwarna)
-        String aktivitas = log.getAktivitas();
-        javax.swing.JLabel lblAkt = new javax.swing.JLabel(aktivitas);
-        lblAkt.setFont(fontIsi);
-        
-        if (aktivitas.toLowerCase().contains("gagal") || aktivitas.toLowerCase().contains("ditolak")) {
-            lblAkt.setForeground(java.awt.Color.RED);
-        } else if (aktivitas.toLowerCase().contains("mengembalikan")) {
-            lblAkt.setForeground(new java.awt.Color(0, 102, 204));
-        } else if (aktivitas.toLowerCase().contains("sedang")) {
-            lblAkt.setForeground(new java.awt.Color(0, 153, 0));
+        if (listUser.isEmpty()) {
+            JLabel kosong = new JLabel("Belum ada data peminjam.");
+            kosong.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            kosong.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+            kosong.setForeground(java.awt.Color.GRAY);
+            jPanel1.add(kosong);
         } else {
-            lblAkt.setForeground(textDark); 
+            for (User user : listUser) {
+                JPanel row = createUserRow(user);
+                jPanel1.add(row);
+            }
         }
         
-        lblAkt.setBounds(250, 8, 350, 20);
-        panel.add(lblAkt);
-
-        // 4. Kolom Waktu
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd MMM yyyy");
-        String tglStr = (log.getTanggal() != null) ? sdf.format(log.getTanggal()) : "-";
+        jPanel1.revalidate();
+        jPanel1.repaint();
+    }
+    
+    private JPanel createUserRow(User user) {
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
+        panel.setPreferredSize(new java.awt.Dimension(800, 60));
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, java.awt.Color.LIGHT_GRAY));
         
-        javax.swing.JLabel lblWaktu = new javax.swing.JLabel(tglStr);
-        lblWaktu.setFont(fontIsi);
-        lblWaktu.setForeground(java.awt.Color.GRAY);
-        lblWaktu.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        lblWaktu.setBounds(600, 8, 120, 20); 
-        panel.add(lblWaktu);
-
+        Font fontBold = new Font("Segoe UI", Font.BOLD, 14);
+        Font fontNormal = new Font("Segoe UI", Font.PLAIN, 14);
+        
+        JLabel lblNama = new JLabel(user.getNama());
+        lblNama.setFont(fontBold);
+        lblNama.setBounds(20, 20, 250, 20);
+        panel.add(lblNama);
+        
+        JLabel lblNim = new JLabel("NIM: " + user.getNim());
+        lblNim.setFont(fontNormal);
+        lblNim.setBounds(280, 20, 150, 20);
+        panel.add(lblNim);
+        
+        JButton btnDetail = new JButton("Detail");
+        btnDetail.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnDetail.setBackground(new java.awt.Color(0, 204, 0));
+        btnDetail.setForeground(java.awt.Color.WHITE);
+        btnDetail.setBounds(680, 15, 90, 30);
+        btnDetail.addActionListener(e -> {
+            new ProfilAkunPeminjam(user.getIdUser()).setVisible(true);
+        });
+        panel.add(btnDetail);
+        
         return panel;
     }
 
@@ -124,10 +112,6 @@ public class LogPeminjaman extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel4 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        panelLogContainer = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         addbarang = new javax.swing.JButton();
         editbarang = new javax.swing.JButton();
@@ -137,47 +121,26 @@ public class LogPeminjaman extends javax.swing.JFrame {
         reqpengembalian = new javax.swing.JButton();
         manajemendenda = new javax.swing.JButton();
         addbarang1 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
+        jPanel7 = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jButton6 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jPanel4.setBackground(new java.awt.Color(0, 204, 0));
-        jPanel4.setLayout(new java.awt.GridBagLayout());
-
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Log Peminjaman");
-        jLabel2.setPreferredSize(new java.awt.Dimension(204, 50));
-        jPanel4.add(jLabel2, new java.awt.GridBagConstraints());
-
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        panelLogContainer.setBackground(new java.awt.Color(0, 204, 0));
-
-        javax.swing.GroupLayout panelLogContainerLayout = new javax.swing.GroupLayout(panelLogContainer);
-        panelLogContainer.setLayout(panelLogContainerLayout);
-        panelLogContainerLayout.setHorizontalGroup(
-            panelLogContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 723, Short.MAX_VALUE)
-        );
-        panelLogContainerLayout.setVerticalGroup(
-            panelLogContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 513, Short.MAX_VALUE)
-        );
-
-        jScrollPane1.setViewportView(panelLogContainer);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel4.add(jScrollPane1, gridBagConstraints);
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -217,7 +180,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
             }
         });
 
-        logpeminjaman.setBackground(new java.awt.Color(0, 204, 0));
+        logpeminjaman.setBackground(new java.awt.Color(60, 63, 65));
         logpeminjaman.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         logpeminjaman.setForeground(new java.awt.Color(255, 255, 255));
         logpeminjaman.setText("Log Peminjaman");
@@ -265,7 +228,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
             }
         });
 
-        addbarang1.setBackground(new java.awt.Color(60, 63, 65));
+        addbarang1.setBackground(new java.awt.Color(0, 204, 0));
         addbarang1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         addbarang1.setForeground(new java.awt.Color(255, 255, 255));
         addbarang1.setText("Dashboard");
@@ -277,15 +240,10 @@ public class LogPeminjaman extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setBackground(new java.awt.Color(255, 51, 51));
-        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton2.setForeground(new java.awt.Color(255, 255, 255));
-        jButton2.setText("Log Out");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
+        jButton1.setBackground(new java.awt.Color(255, 51, 51));
+        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(255, 255, 255));
+        jButton1.setText("Log Out");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -302,7 +260,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
                     .addComponent(reqpengembalian, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(manajemendenda, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addbarang1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -325,9 +283,178 @@ public class LogPeminjaman extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(manajemendenda, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(163, Short.MAX_VALUE))
         );
+
+        jPanel4.setBackground(new java.awt.Color(0, 204, 0));
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Data Akun Pengguna");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 21, 0, 0);
+        jPanel4.add(jLabel2, gridBagConstraints);
+
+        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton2.setText("Tambah Akun");
+        jButton2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 29;
+        gridBagConstraints.ipady = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 277, 0, 21);
+        jPanel4.add(jButton2, gridBagConstraints);
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel3.setText("Nama");
+
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel4.setText("NIM");
+
+        jButton3.setBackground(new java.awt.Color(0, 204, 51));
+        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jButton3.setForeground(new java.awt.Color(255, 255, 255));
+        jButton3.setText("Detail");
+        jButton3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(153, 153, 153)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 20, Short.MAX_VALUE))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 218;
+        gridBagConstraints.ipady = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 21, 265, 21);
+        jPanel4.add(jPanel1, gridBagConstraints);
+
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel5.setText("Nama");
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel6.setText("NIM");
+
+        jButton4.setBackground(new java.awt.Color(0, 204, 51));
+        jButton4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jButton4.setForeground(new java.awt.Color(255, 255, 255));
+        jButton4.setText("Detail");
+        jButton4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(153, 153, 153)
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6)
+                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 20, Short.MAX_VALUE))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 218;
+        gridBagConstraints.ipady = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(27, 21, 0, 21);
+        jPanel4.add(jPanel5, gridBagConstraints);
+
+        jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel9.setText("Nama");
+
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel10.setText("NIM");
+
+        jButton6.setBackground(new java.awt.Color(0, 204, 51));
+        jButton6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jButton6.setForeground(new java.awt.Color(255, 255, 255));
+        jButton6.setText("Detail");
+        jButton6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(153, 153, 153)
+                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23))
+        );
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(jLabel10)
+                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 20, Short.MAX_VALUE))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx = 218;
+        gridBagConstraints.ipady = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 21, 0, 21);
+        jPanel4.add(jPanel7, gridBagConstraints);
 
         jPanel2.setBackground(new java.awt.Color(0, 204, 0));
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -356,7 +483,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -364,51 +491,66 @@ public class LogPeminjaman extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarangActionPerformed
+        // Navigasi ke halaman tambah barang
         new tambahbarang().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_addbarangActionPerformed
 
     private void editbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editbarangActionPerformed
+        // Navigasi ke halaman edit barang
         new editbarang().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_editbarangActionPerformed
 
     private void hapusbarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hapusbarangActionPerformed
+        // Navigasi ke halaman hapus barang
         new hapusbarang().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_hapusbarangActionPerformed
 
     private void logpeminjamanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logpeminjamanActionPerformed
-        // Sudah di halaman log peminjaman, tidak perlu navigasi
+        // Navigasi ke halaman log peminjaman
+        new LogPeminjaman().setVisible(true);
+        this.dispose();
     }//GEN-LAST:event_logpeminjamanActionPerformed
 
     private void reqpeminjamanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqpeminjamanActionPerformed
+        // Navigasi ke halaman request peminjaman
         new RequestPeminjaman().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_reqpeminjamanActionPerformed
 
     private void reqpengembalianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reqpengembalianActionPerformed
+        // Navigasi ke halaman request pengembalian
         new RequestPengembalian().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_reqpengembalianActionPerformed
 
     private void manajemendendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manajemendendaActionPerformed
-        new ManajemenDenda().setVisible(true);
+        // Navigasi ke halaman manajemen denda
+        new ManajemenDenda();
         this.dispose();
     }//GEN-LAST:event_manajemendendaActionPerformed
 
     private void addbarang1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbarang1ActionPerformed
+        // Dashboard
         new DashboardAdmin().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_addbarang1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // Logout
-        Utils.UserSession.getInstance().clearSession();
-        javax.swing.JOptionPane.showMessageDialog(this, "Berhasil logout!");
-        new Register.LoginPage().setVisible(true);
+        // Navigasi ke halaman tambah akun
+        new TambahAkun().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Logout
+        UserSession.getInstance().clearSession();
+        JOptionPane.showMessageDialog(this, "Berhasil logout!");
+        new LoginPage().setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -432,7 +574,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new LogPeminjaman().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new ManajemenPengguna().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -440,17 +582,28 @@ public class LogPeminjaman extends javax.swing.JFrame {
     private javax.swing.JButton addbarang1;
     private javax.swing.JButton editbarang;
     private javax.swing.JButton hapusbarang;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JButton logpeminjaman;
-    private javax.swing.JPanel panelLogContainer;
+    private javax.swing.JButton manajemendenda;
     private javax.swing.JButton reqpeminjaman;
     private javax.swing.JButton reqpengembalian;
-    private javax.swing.JButton manajemendenda;
     // End of variables declaration//GEN-END:variables
 }

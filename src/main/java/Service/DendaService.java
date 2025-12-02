@@ -1,12 +1,17 @@
 package Service;
 
-import Database.DatabaseConnection;
-import Model.Denda;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+
+import Database.DatabaseConnection;
+import Model.Denda;
 
 /**
  * Service class untuk business logic Denda
@@ -85,8 +90,12 @@ public class DendaService {
     
     /**
      * Get total denda belum bayar untuk user tertentu
+     * FIXED: Include denda real-time dari peminjaman aktif yang terlambat
      */
     public int getTotalDendaBelumBayar(int idUser) {
+        int total = 0;
+        
+        // 1. Total dari tabel denda
         String sql = "SELECT COALESCE(SUM(jumlah_denda), 0) as total " +
                      "FROM denda " +
                      "WHERE id_user = ? AND status_bayar = 'belum_bayar'";
@@ -98,13 +107,49 @@ public class DendaService {
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                return rs.getInt("total");
+                total = rs.getInt("total");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         
-        return 0;
+        // 2. TAMBAHKAN: Denda real-time dari peminjaman aktif yang terlambat
+        // FIXED: Hitung denda freeze untuk yang ditolak, denda real-time untuk yang lainnya
+        String sqlAktif = "SELECT COALESCE(SUM(" +
+                         "  CASE " +
+                         "    WHEN (SELECT peng.status FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman ORDER BY peng.id_pengembalian DESC LIMIT 1) = 'ditolak' " +
+                         "    THEN DATEDIFF((SELECT peng.tanggal_kembali FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1), p.tanggal_jatuh_tempo) * " + DENDA_PER_HARI +
+                         "    ELSE DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) * " + DENDA_PER_HARI +
+                         "  END" +
+                         "), 0) AS total_realtime " +
+                         "FROM peminjaman p " +
+                         "WHERE p.id_user = ? " +
+                         "  AND p.status = 'disetujui' " +
+                         "  AND DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) > 0 " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM pengembalian peng " +
+                         "      WHERE peng.id_peminjaman = p.id_peminjaman " +
+                         "        AND peng.status = 'disetujui'" +
+                         "  ) " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM denda d " +
+                         "      WHERE d.id_peminjaman = p.id_peminjaman" +
+                         "  )";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlAktif)) {
+            
+            ps.setInt(1, idUser);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                total += rs.getInt("total_realtime");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return total;
     }
     
     /**
@@ -116,9 +161,12 @@ public class DendaService {
     
     /**
      * Get list denda untuk user
+     * FIXED: Gabungkan denda dari tabel + denda real-time dari peminjaman aktif yang terlambat
      */
     public List<Denda> getDendaByUser(int idUser) {
         List<Denda> list = new ArrayList<>();
+        
+        // 1. Ambil denda yang sudah tercatat di tabel denda
         String sql = "SELECT d.*, u.nama_user, b.nama_barang " +
                      "FROM denda d " +
                      "JOIN users u ON d.id_user = u.id_user " +
@@ -153,14 +201,94 @@ public class DendaService {
             e.printStackTrace();
         }
         
+        // 2. TAMBAHKAN: Cek peminjaman aktif yang terlambat (belum dikembalikan)
+        // FIXED: Tetap tampilkan meski ada request pengembalian yang masih 'proses'
+        // FIXED: FREEZE denda jika pengembalian ditolak (denda tidak bertambah)
+        String sqlAktif = "SELECT p.id_peminjaman, p.id_user, p.tanggal_jatuh_tempo, " +
+                         "b.nama_barang, u.nama_user, " +
+                         "(SELECT peng.status FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman ORDER BY peng.id_pengembalian DESC LIMIT 1) AS status_pengembalian, " +
+                         "(SELECT peng.tanggal_kembali FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1) AS tanggal_ditolak, " +
+                         "(SELECT peng.keterangan_admin FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1) AS alasan_ditolak, " +
+                         "CASE " +
+                         "  WHEN (SELECT peng.status FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman ORDER BY peng.id_pengembalian DESC LIMIT 1) = 'ditolak' " +
+                         "  THEN DATEDIFF((SELECT peng.tanggal_kembali FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1), p.tanggal_jatuh_tempo) " +
+                         "  ELSE DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) " +
+                         "END AS hari_telat " +
+                         "FROM peminjaman p " +
+                         "JOIN barang b ON p.id_barang = b.id_barang " +
+                         "JOIN users u ON p.id_user = u.id_user " +
+                         "WHERE p.id_user = ? " +
+                         "  AND p.status = 'disetujui' " +
+                         "  AND DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) > 0 " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM pengembalian peng " +
+                         "      WHERE peng.id_peminjaman = p.id_peminjaman " +
+                         "        AND peng.status = 'disetujui'" +
+                         "  ) " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM denda d " +
+                         "      WHERE d.id_peminjaman = p.id_peminjaman" +
+                         "  )";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlAktif)) {
+            
+            ps.setInt(1, idUser);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                int hariTelat = rs.getInt("hari_telat");
+                int jumlahDenda = hariTelat * DENDA_PER_HARI;
+                String statusPengembalian = rs.getString("status_pengembalian");
+                String alasanDitolak = rs.getString("alasan_ditolak");
+                Date tanggalDitolak = rs.getDate("tanggal_ditolak");
+                
+                Denda denda = new Denda();
+                denda.setIdDenda(0); // Belum ada di tabel (virtual)
+                denda.setIdPeminjaman(rs.getInt("id_peminjaman"));
+                denda.setIdUser(rs.getInt("id_user"));
+                denda.setJumlahDenda(jumlahDenda);
+                denda.setHariTelat(hariTelat);
+                denda.setTanggalHitung(new Date(System.currentTimeMillis()));
+                denda.setStatusBayar("belum_bayar");
+                
+                // Tampilkan status pengembalian di keterangan
+                String keterangan = "⚠️ TERLAMBAT " + hariTelat + " hari";
+                if ("ditolak".equals(statusPengembalian)) {
+                    keterangan += " (DENDA FREEZE - Pengembalian ditolak)";
+                    if (alasanDitolak != null && !alasanDitolak.isEmpty()) {
+                        keterangan += "\nAlasan: " + alasanDitolak;
+                    }
+                    keterangan += "\n➡️ Silakan ajukan pengembalian ulang";
+                } else if ("proses".equals(statusPengembalian)) {
+                    keterangan += " (REAL-TIME) - Menunggu approval admin";
+                } else {
+                    keterangan += " (REAL-TIME) - Belum dikembalikan";
+                }
+                denda.setKeterangan(keterangan);
+                denda.setNamaUser(rs.getString("nama_user"));
+                denda.setNamaBarang(rs.getString("nama_barang"));
+                
+                list.add(denda);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
         return list;
     }
     
     /**
      * Get all denda belum bayar (untuk admin)
      */
+    /**
+     * Get all denda belum bayar (untuk admin)
+     * FIXED: Include denda real-time dari peminjaman yang terlambat
+     */
     public List<Denda> getAllDendaBelumBayar() {
         List<Denda> list = new ArrayList<>();
+        
+        // 1. Ambil denda yang sudah tercatat di tabel denda
         String sql = "SELECT d.*, u.nama_user, b.nama_barang " +
                      "FROM denda d " +
                      "JOIN users u ON d.id_user = u.id_user " +
@@ -183,6 +311,75 @@ public class DendaService {
                 denda.setTanggalHitung(rs.getDate("tanggal_hitung"));
                 denda.setStatusBayar(rs.getString("status_bayar"));
                 denda.setKeterangan(rs.getString("keterangan"));
+                denda.setNamaUser(rs.getString("nama_user"));
+                denda.setNamaBarang(rs.getString("nama_barang"));
+                
+                list.add(denda);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        // 2. TAMBAHKAN: Denda real-time dari peminjaman yang terlambat (UNTUK SEMUA USER)
+        String sqlAktif = "SELECT p.id_peminjaman, p.id_user, p.tanggal_jatuh_tempo, " +
+                         "b.nama_barang, u.nama_user, " +
+                         "(SELECT peng.status FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman ORDER BY peng.id_pengembalian DESC LIMIT 1) AS status_pengembalian, " +
+                         "(SELECT peng.tanggal_kembali FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1) AS tanggal_ditolak, " +
+                         "(SELECT peng.keterangan_admin FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1) AS alasan_ditolak, " +
+                         "CASE " +
+                         "  WHEN (SELECT peng.status FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman ORDER BY peng.id_pengembalian DESC LIMIT 1) = 'ditolak' " +
+                         "  THEN DATEDIFF((SELECT peng.tanggal_kembali FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1), p.tanggal_jatuh_tempo) " +
+                         "  ELSE DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) " +
+                         "END AS hari_telat " +
+                         "FROM peminjaman p " +
+                         "JOIN barang b ON p.id_barang = b.id_barang " +
+                         "JOIN users u ON p.id_user = u.id_user " +
+                         "WHERE p.status = 'disetujui' " +
+                         "  AND DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) > 0 " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM pengembalian peng " +
+                         "      WHERE peng.id_peminjaman = p.id_peminjaman " +
+                         "        AND peng.status = 'disetujui'" +
+                         "  ) " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM denda d " +
+                         "      WHERE d.id_peminjaman = p.id_peminjaman" +
+                         "  ) " +
+                         "ORDER BY p.tanggal_jatuh_tempo ASC";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlAktif);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                int hariTelat = rs.getInt("hari_telat");
+                int jumlahDenda = hariTelat * DENDA_PER_HARI;
+                String statusPengembalian = rs.getString("status_pengembalian");
+                String alasanDitolak = rs.getString("alasan_ditolak");
+                Date tanggalDitolak = rs.getDate("tanggal_ditolak");
+                
+                Denda denda = new Denda();
+                denda.setIdDenda(0); // Virtual (belum ada di tabel)
+                denda.setIdPeminjaman(rs.getInt("id_peminjaman"));
+                denda.setIdUser(rs.getInt("id_user"));
+                denda.setJumlahDenda(jumlahDenda);
+                denda.setHariTelat(hariTelat);
+                denda.setTanggalHitung(new Date(System.currentTimeMillis()));
+                denda.setStatusBayar("belum_bayar");
+                
+                // Keterangan
+                String keterangan = "⚠️ TERLAMBAT " + hariTelat + " hari";
+                if ("ditolak".equals(statusPengembalian)) {
+                    keterangan += " (DENDA FREEZE - Pengembalian ditolak)";
+                    if (alasanDitolak != null && !alasanDitolak.isEmpty()) {
+                        keterangan += "\nAlasan: " + alasanDitolak;
+                    }
+                } else if ("proses".equals(statusPengembalian)) {
+                    keterangan += " (REAL-TIME) - Menunggu approval admin";
+                } else {
+                    keterangan += " (REAL-TIME) - Belum dikembalikan";
+                }
+                denda.setKeterangan(keterangan);
                 denda.setNamaUser(rs.getString("nama_user"));
                 denda.setNamaBarang(rs.getString("nama_barang"));
                 
@@ -216,8 +413,12 @@ public class DendaService {
     
     /**
      * Get total semua denda belum bayar (untuk statistik admin)
+     * FIXED: Include denda real-time
      */
     public int getTotalSemuaDendaBelumBayar() {
+        int total = 0;
+        
+        // 1. Total dari tabel denda
         String sql = "SELECT COALESCE(SUM(jumlah_denda), 0) as total " +
                      "FROM denda WHERE status_bayar = 'belum_bayar'";
         
@@ -226,12 +427,44 @@ public class DendaService {
              ResultSet rs = ps.executeQuery()) {
             
             if (rs.next()) {
-                return rs.getInt("total");
+                total = rs.getInt("total");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         
-        return 0;
+        // 2. TAMBAHKAN: Denda real-time dari semua peminjaman yang terlambat
+        String sqlAktif = "SELECT COALESCE(SUM(" +
+                         "  CASE " +
+                         "    WHEN (SELECT peng.status FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman ORDER BY peng.id_pengembalian DESC LIMIT 1) = 'ditolak' " +
+                         "    THEN DATEDIFF((SELECT peng.tanggal_kembali FROM pengembalian peng WHERE peng.id_peminjaman = p.id_peminjaman AND peng.status = 'ditolak' ORDER BY peng.id_pengembalian DESC LIMIT 1), p.tanggal_jatuh_tempo) * " + DENDA_PER_HARI +
+                         "    ELSE DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) * " + DENDA_PER_HARI +
+                         "  END" +
+                         "), 0) AS total_realtime " +
+                         "FROM peminjaman p " +
+                         "WHERE p.status = 'disetujui' " +
+                         "  AND DATEDIFF(CURDATE(), p.tanggal_jatuh_tempo) > 0 " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM pengembalian peng " +
+                         "      WHERE peng.id_peminjaman = p.id_peminjaman " +
+                         "        AND peng.status = 'disetujui'" +
+                         "  ) " +
+                         "  AND NOT EXISTS (" +
+                         "      SELECT 1 FROM denda d " +
+                         "      WHERE d.id_peminjaman = p.id_peminjaman" +
+                         "  )";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlAktif);
+             ResultSet rs = ps.executeQuery()) {
+            
+            if (rs.next()) {
+                total += rs.getInt("total_realtime");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return total;
     }
 }

@@ -1,6 +1,7 @@
 Admin\hapusbarang$6.class
 Admin\RequestPeminjaman$6.class
 Peminjam\RiwayatPeminjam.class
+Admin\ManajemenPengguna$2.class
 Model\RequestData.class
 Peminjam\DashboardPeminjam$7.class
 Admin\DashboardAdmin$7.class
@@ -11,6 +12,7 @@ Peminjam\DetailBarang$7.class
 Peminjam\lblKategori.class
 Admin\hapusbarang$3.class
 Admin\RequestPeminjaman$3.class
+Admin\TambahAkun$2.class
 Admin\LogPeminjaman$8.class
 Peminjam\FormPengembalian$1.class
 DAO\PeminjamanDAO.class
@@ -32,6 +34,7 @@ Admin\hapusbarang$10.class
 Admin\tambahbarang$2.class
 Admin\RequestPeminjaman$9.class
 Register\LoginPage$3.class
+Admin\ProfilAkunPeminjam.class
 Admin\DashboardAdmin.class
 Utils\UserSession.class
 Admin\RequestPengembalian$7.class
@@ -44,7 +47,9 @@ Model\Denda.class
 Peminjam\DetailBarang$2.class
 Admin\editbarang$14.class
 Admin\hapusbarang$13.class
+Admin\ManajemenPengguna$4.class
 Peminjam\DetailBarang.class
+Admin\TambahAkun$1.class
 Admin\hapusbarang$1.class
 Peminjam\RiwayatPeminjam$2.class
 Admin\tambahbarang$4.class
@@ -66,10 +71,12 @@ Admin\LogPeminjaman$4.class
 Peminjam\RiwayatPeminjam$3.class
 Admin\hapusbarang$14.class
 Peminjam\ProfilPeminjam.class
+Admin\ManajemenPengguna$5.class
 Admin\editbarang.class
 Admin\RequestPeminjaman$7.class
 Admin\hapusbarang.class
 Admin\hapusbarang$9.class
+Model\User.class
 Admin\hapusbarang$2.class
 Admin\tambahbarang$3.class
 Peminjam\DashboardPeminjam$5.class
@@ -80,6 +87,7 @@ Admin\editbarang$6.class
 Peminjam\FormPengembalian$1$1.class
 Admin\editbarang$4.class
 Admin\formeditbarang.class
+Admin\ManajemenPengguna$9.class
 Admin\RequestPengembalian$5.class
 Admin\tambahbarang.class
 Admin\hapusbarang$11.class
@@ -94,6 +102,7 @@ Utils\FileUploadValidator$ValidationResult.class
 Admin\editbarang$7.class
 Register\LoginPage$4.class
 Admin\tambahbarang$9.class
+Admin\ManajemenPengguna.class
 Peminjam\DashboardDenda.class
 Model\Barang.class
 Admin\DashboardAdmin$6.class
@@ -108,19 +117,23 @@ Admin\RequestPeminjaman$2.class
 Admin\tambahbarang$10.class
 Utils\NavigationHelper.class
 Admin\editbarang$10.class
+Admin\ManajemenPengguna$6.class
 Admin\DashboardAdmin$3.class
 Admin\LogPeminjaman$9.class
 Admin\hapusbarang$4.class
 Admin\formeditbarang$2.class
 Peminjam\DetailBarang$6.class
+Admin\DashboardAdmin$10.class
 Admin\tambahbarang$13.class
 Peminjam\DetailRiwayat$1.class
 Admin\editbarang$1.class
 Admin\hapusbarang$7.class
+Admin\ManajemenPengguna$3.class
 Admin\tambahbarang$1.class
 Peminjam\DashboardPeminjam$2.class
 Admin\editbarang$9.class
 Peminjam\DashboardPeminjam$9.class
+Admin\TambahAkun.class
 Admin\RequestPengembalian$3.class
 Admin\formeditbarang$3$1.class
 Admin\DashboardAdmin$2.class
@@ -130,6 +143,7 @@ Register\LoginPage.class
 Admin\DashboardAdmin$1.class
 Admin\editbarang$2.class
 Admin\LogPeminjaman.class
+Admin\ManajemenPengguna$7.class
 Admin\RequestPeminjaman$5.class
 Admin\DashboardAdmin$9.class
 Peminjam\DetailBarang$5.class
@@ -139,7 +153,9 @@ Admin\editbarang$3.class
 Admin\tambahbarang$7.class
 editbarang\java.class
 Admin\LogPeminjaman$1.class
+Admin\ManajemenPengguna$1.class
 Admin\hapusbarang$5.class
+Admin\ProfilAkunPeminjam$1.class
 Peminjam\DashboardPeminjam$8.class
 Admin\tambahbarang$11.class
 Admin\DashboardAdmin$8.class
@@ -148,3 +164,4 @@ Admin\RequestPeminjaman$4.class
 Admin\RequestPengembalian$2.class
 Peminjam\DetailBarang$4.class
 Admin\LogPeminjaman$7.class
+Admin\ManajemenPengguna$8.class

@@ -3,11 +3,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package DAO;
-import Database.DatabaseConnection; 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import Database.DatabaseConnection;
 /**
  *
  * @author aldriknoel
@@ -139,13 +144,14 @@ public class PeminjamanDAO {
     public java.util.List<Model.RequestData> getRiwayatUser(int idUser) {
         java.util.List<Model.RequestData> list = new java.util.ArrayList<>();
         
-        // UPDATE: Join dengan tabel pengembalian untuk dapat status pengembalian
+        // FIXED: Ambil HANYA pengembalian terakhir (ORDER BY id_pengembalian DESC LIMIT 1)
         String sql = "SELECT p.id_peminjaman, b.nama_barang, p.tanggal_pinjam, p.tanggal_jatuh_tempo, " +
                      "p.status, p.jumlah, p.keterangan, " +
-                     "pg.status as status_pengembalian, pg.tanggal_kembali, pg.keterangan_admin " +
+                     "(SELECT pg1.status FROM pengembalian pg1 WHERE pg1.id_peminjaman = p.id_peminjaman ORDER BY pg1.id_pengembalian DESC LIMIT 1) as status_pengembalian, " +
+                     "(SELECT pg2.tanggal_kembali FROM pengembalian pg2 WHERE pg2.id_peminjaman = p.id_peminjaman ORDER BY pg2.id_pengembalian DESC LIMIT 1) as tanggal_kembali, " +
+                     "(SELECT pg3.keterangan_admin FROM pengembalian pg3 WHERE pg3.id_peminjaman = p.id_peminjaman ORDER BY pg3.id_pengembalian DESC LIMIT 1) as keterangan_admin " +
                      "FROM peminjaman p " +
                      "JOIN barang b ON p.id_barang = b.id_barang " +
-                     "LEFT JOIN pengembalian pg ON p.id_peminjaman = pg.id_peminjaman " +
                      "WHERE p.id_user = ? " +
                      "ORDER BY p.tanggal_pinjam DESC";
 
@@ -192,6 +198,30 @@ public class PeminjamanDAO {
             e.printStackTrace();
         }
         return list;
+    }
+    
+    /**
+     * Cek apakah peminjaman punya pengembalian yang ditolak
+     * Jika ada pengembalian ditolak, user BISA ajukan ulang
+     */
+    public String getStatusPengembalian(int idPeminjaman) {
+        String sql = "SELECT status FROM pengembalian WHERE id_peminjaman = ? ORDER BY id_pengembalian DESC LIMIT 1";
+        try (java.sql.Connection conn = Database.DatabaseConnection.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idPeminjaman);
+            java.sql.ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String status = rs.getString("status");
+                System.out.println("DEBUG PeminjamanDAO.getStatusPengembalian - ID Peminjaman: " + idPeminjaman + ", Status: " + status);
+                return status;
+            } else {
+                System.out.println("DEBUG PeminjamanDAO.getStatusPengembalian - ID Peminjaman: " + idPeminjaman + ", Status: NULL (belum ada pengembalian)");
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR getStatusPengembalian: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null; // Belum ada pengembalian
     }
     
     public boolean ajukanPengembalian(int idPeminjaman, java.io.File fileBuktiKembali, int jumlahKembali) {
@@ -254,11 +284,17 @@ public class PeminjamanDAO {
                 }
 
             } else {
-                // Full return - set status ke 'proses' untuk menandai sedang dalam proses pengembalian
-                String sqlUpdate = "UPDATE peminjaman SET status = 'proses' WHERE id_peminjaman = ?";
-                psUpdateLama = conn.prepareStatement(sqlUpdate);
-                psUpdateLama.setInt(1, idPeminjaman);
-                psUpdateLama.executeUpdate();
+                // FIXED: JANGAN ubah status peminjaman!
+                // Biarkan tetap 'disetujui' agar denda tetap muncul
+                // Status pengembalian sudah tercatat di tabel 'pengembalian' dengan status='proses'
+                
+                // Full return - status tetap 'disetujui', tidak perlu diubah
+                // String sqlUpdate = "UPDATE peminjaman SET status = 'proses' WHERE id_peminjaman = ?";
+                // psUpdateLama = conn.prepareStatement(sqlUpdate);
+                // psUpdateLama.setInt(1, idPeminjaman);
+                // psUpdateLama.executeUpdate();
+                
+                // Tidak ada update yang perlu dilakukan, idTransaksiTarget tetap = idPeminjaman
             }
 
             // 2. CATAT KE TABEL PENGEMBALIAN

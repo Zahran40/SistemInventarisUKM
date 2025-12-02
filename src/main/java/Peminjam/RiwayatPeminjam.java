@@ -39,7 +39,8 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         // PENGAMAN: Cek panel sudah siap atau belum
         if (panelRiwayatContainer == null) return;
 
-        int idUser = 2; // SEMENTARA (Nanti ganti SessionHelper.getUserId())
+        // FIXED: Gunakan user ID dari session yang login
+        int idUser = Utils.UserSession.getInstance().getUserId();
         
         PeminjamanDAO dao = new PeminjamanDAO();
         List<RequestData> list = dao.getRiwayatUser(idUser);
@@ -170,16 +171,49 @@ public class RiwayatPeminjam extends javax.swing.JFrame {
         });
         panel.add(btnDetail);
 
-        if ("disetujui".equalsIgnoreCase(status)) {
-            javax.swing.JButton btnKembali = new javax.swing.JButton("Kembalikan");
-            btnKembali.setBackground(new java.awt.Color(255, 102, 102)); 
-            btnKembali.setForeground(java.awt.Color.WHITE);
-            btnKembali.setFont(new java.awt.Font("Segoe UI", 1, 11));
-            btnKembali.setBounds(740, 15, 95, 25);
-            btnKembali.addActionListener(e -> {
-                 new FormPengembalian(this, item).setVisible(true);
-            });
-            panel.add(btnKembali);
+        // Cek status pengembalian terakhir
+        DAO.PeminjamanDAO dao = new DAO.PeminjamanDAO();
+        String statusPengembalian = dao.getStatusPengembalian(item.getIdPeminjaman());
+        
+        // DEBUG: Print untuk cek nilai
+        System.out.println("DEBUG RiwayatPeminjam - ID: " + item.getIdPeminjaman() + 
+                          ", Status Peminjaman: " + status + 
+                          ", Status Pengembalian: " + statusPengembalian);
+        
+        // LOGIKA TOMBOL BERDASARKAN STATUS
+        // FIXED: Tambahkan kondisi untuk status "pengembalian_ditolak"
+        if ("disetujui".equalsIgnoreCase(status) || "pengembalian_ditolak".equalsIgnoreCase(status)) {
+            
+            // Case 1: Pengembalian DITOLAK -> Tombol "Ajukan Ulang" (ORANGE)
+            if ("ditolak".equalsIgnoreCase(statusPengembalian) || "pengembalian_ditolak".equalsIgnoreCase(status)) {
+                javax.swing.JButton btnAjukanUlang = new javax.swing.JButton("Ajukan Ulang");
+                btnAjukanUlang.setBackground(new java.awt.Color(255, 165, 0)); // Orange
+                btnAjukanUlang.setForeground(java.awt.Color.WHITE);
+                btnAjukanUlang.setFont(new java.awt.Font("Segoe UI", 1, 11));
+                btnAjukanUlang.setBounds(740, 15, 110, 25);
+                btnAjukanUlang.addActionListener(e -> {
+                     new FormPengembalian(this, item).setVisible(true);
+                });
+                panel.add(btnAjukanUlang);
+                System.out.println("✅ Tombol AJUKAN ULANG ditambahkan untuk ID: " + item.getIdPeminjaman());
+            }
+            // Case 2: Belum pernah ajukan pengembalian -> Tombol "Kembalikan" (MERAH)
+            else if (statusPengembalian == null || statusPengembalian.trim().isEmpty()) {
+                javax.swing.JButton btnKembali = new javax.swing.JButton("Kembalikan");
+                btnKembali.setBackground(new java.awt.Color(255, 102, 102)); 
+                btnKembali.setForeground(java.awt.Color.WHITE);
+                btnKembali.setFont(new java.awt.Font("Segoe UI", 1, 11));
+                btnKembali.setBounds(740, 15, 95, 25);
+                btnKembali.addActionListener(e -> {
+                     new FormPengembalian(this, item).setVisible(true);
+                });
+                panel.add(btnKembali);
+                System.out.println("✅ Tombol KEMBALIKAN ditambahkan untuk ID: " + item.getIdPeminjaman());
+            }
+            // Case 3: Status 'proses' atau 'disetujui' -> Tidak ada tombol
+            else {
+                System.out.println("⏸️ Tidak ada tombol untuk ID: " + item.getIdPeminjaman() + " (status: " + statusPengembalian + ")");
+            }
         }
 
         return panel;

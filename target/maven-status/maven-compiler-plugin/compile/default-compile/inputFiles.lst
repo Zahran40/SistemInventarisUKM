@@ -4,8 +4,11 @@ C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\formeditba
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\hapusbarang.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\LogPeminjaman.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\ManajemenDenda.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\ManajemenPengguna.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\ProfilAkunPeminjam.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\RequestPeminjaman.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\RequestPengembalian.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\TambahAkun.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Admin\tambahbarang.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\com\mycompany\sisteminventarisukm\Sisteminventarisukm.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\DAO\AdminDAO.java
@@ -17,6 +20,7 @@ C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\Barang.jav
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\Denda.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\LogData.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\RequestData.java
+C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Model\User.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DashboardDenda.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DashboardPeminjam.java
 C:\JavaProjects\PraktikumPBOL\sisteminventarisukm\src\main\java\Peminjam\DetailBarang.java
