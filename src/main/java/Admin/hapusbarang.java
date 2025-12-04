@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 public class hapusbarang extends javax.swing.JFrame {
 
     public hapusbarang() {
+        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
@@ -112,20 +113,32 @@ public class hapusbarang extends javax.swing.JFrame {
         btnHapus.setBounds(200, 100, 80, 30);
         
         btnHapus.addActionListener(e -> {
+            BarangDAO dao = new BarangDAO();
+            
+            // CEK APAKAH BARANG SEDANG DIPINJAM
+            if (dao.isBarangSedangDipinjam(b.getId())) {
+                JOptionPane.showMessageDialog(this, 
+                    "Tidak dapat menghapus barang '" + b.getNama() + "'!\n" +
+                    "Barang ini sedang dipinjam oleh mahasiswa.\n\n" +
+                    "Tunggu hingga barang dikembalikan terlebih dahulu.", 
+                    "Barang Sedang Dipinjam", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
             int confirm = JOptionPane.showConfirmDialog(this, 
                     "Yakin ingin menghapus barang: " + b.getNama() + "?", 
                     "Konfirmasi Hapus", 
                     JOptionPane.YES_NO_OPTION);
             
             if (confirm == JOptionPane.YES_OPTION) {
-                BarangDAO dao = new BarangDAO();
                 if (dao.hapusBarang(b.getId())) {
                     JOptionPane.showMessageDialog(this, "Barang berhasil dihapus!");
                     // Refresh halaman
                     loadDataBarang(txtSearch.getText(), cmbKategori.getSelectedItem().toString());
                 } else {
                     JOptionPane.showMessageDialog(this, 
-                        "Gagal menghapus barang.\nKemungkinan barang sedang dipinjam atau ada riwayat transaksi.", 
+                        "Gagal menghapus barang.\nKemungkinan ada riwayat transaksi terkait.", 
                         "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }

@@ -16,6 +16,7 @@ public class tambahbarang extends javax.swing.JFrame {
      * Creates new form dashboardadmin
      */
     public tambahbarang() {
+        if (!SessionHelper.checkAdmin(this)) return;
         System.out.println("CONSTRUCTOR TAMBAHBARANG DIPANGGIL!"); // DEBUG
         initComponents();
         System.out.println("initComponents() SELESAI"); // DEBUG
@@ -449,6 +450,15 @@ public class tambahbarang extends javax.swing.JFrame {
         
         // 3. Proses Simpan
         DAO.BarangDAO dao = new DAO.BarangDAO();
+        
+        // CEK NAMA BARANG DUPLIKAT
+        if (dao.isNamaBarangExists(namaBarang)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Nama barang '" + namaBarang + "' sudah ada!\nSilakan gunakan nama lain.", 
+                "Nama Duplikat", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
         // Cari ID Kategori dulu
         int idKategori = dao.getKategoriId(namaKategori);

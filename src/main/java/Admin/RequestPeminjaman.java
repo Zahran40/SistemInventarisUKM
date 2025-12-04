@@ -31,6 +31,7 @@ public class RequestPeminjaman extends javax.swing.JFrame {
      * Creates new form RequestPeminjaman
      */
     public RequestPeminjaman() {
+        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);

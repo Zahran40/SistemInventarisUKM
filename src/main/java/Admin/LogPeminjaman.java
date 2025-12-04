@@ -30,6 +30,7 @@ public class LogPeminjaman extends javax.swing.JFrame {
      * Creates new form LogPeminjaman
      */
     public LogPeminjaman() {
+        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);

@@ -240,9 +240,18 @@ public class formeditbarang extends javax.swing.JDialog {
             javax.swing.JOptionPane.showMessageDialog(this, "Nama barang tidak boleh kosong!");
             return;
         }
+        
+        // CEK NAMA BARANG DUPLIKAT (selain barang ini sendiri)
+        DAO.BarangDAO dao = new DAO.BarangDAO();
+        if (dao.isNamaBarangExistsForOther(namaBaru, barangTarget.getId())) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Nama barang '" + namaBaru + "' sudah digunakan oleh barang lain!\nSilakan gunakan nama yang berbeda.", 
+                "Nama Duplikat", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         // 3. PROSES UPDATE KE DATABASE
-        DAO.BarangDAO dao = new DAO.BarangDAO();
         
         // Kita butuh ID Kategori (bukan namanya) untuk disimpan ke tabel barang
         int idKat = dao.getKategoriId(katBaru); 

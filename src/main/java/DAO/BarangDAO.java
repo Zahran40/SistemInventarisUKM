@@ -4,15 +4,16 @@
  */
 package DAO;
 
-import Database.DatabaseConnection; 
-import Model.Barang;                
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import Database.DatabaseConnection;
+import Model.Barang;
 /**
  *
  * @author aldriknoel
@@ -183,6 +184,58 @@ public class BarangDAO {
             e.printStackTrace();
         }
         return id;
+    }
+
+    // Cek apakah nama barang sudah ada (untuk validasi tambah barang)
+    public boolean isNamaBarangExists(String namaBarang) {
+        String sql = "SELECT COUNT(*) FROM barang WHERE LOWER(nama_barang) = LOWER(?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, namaBarang.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    // Cek apakah nama barang sudah dipakai barang lain (untuk validasi edit barang)
+    public boolean isNamaBarangExistsForOther(String namaBarang, int idBarang) {
+        String sql = "SELECT COUNT(*) FROM barang WHERE LOWER(nama_barang) = LOWER(?) AND id_barang != ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, namaBarang.trim());
+            ps.setInt(2, idBarang);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    // Cek apakah barang sedang dipinjam (status peminjaman = 'dipinjam')
+    public boolean isBarangSedangDipinjam(int idBarang) {
+        String sql = "SELECT COUNT(*) FROM peminjaman WHERE id_barang = ? AND status = 'dipinjam'";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idBarang);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // Tambah Barang Baru

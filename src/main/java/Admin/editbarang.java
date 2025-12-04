@@ -25,6 +25,7 @@ public class editbarang extends javax.swing.JFrame {
      * Creates new form editbarang
      */
     public editbarang() {
+        if (!SessionHelper.checkAdmin(this)) return;
         initComponents();
         setLocationRelativeTo(null);
         setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);

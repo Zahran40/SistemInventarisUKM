@@ -22,6 +22,7 @@ import javax.swing.SwingConstants;
 
 import Model.Denda;
 import Service.DendaService;
+import Utils.SessionHelper;
 
 /**
  * Dashboard Admin untuk monitor dan konfirmasi pembayaran denda
@@ -33,6 +34,7 @@ public class ManajemenDenda extends javax.swing.JFrame {
     private JLabel lblAmount; // Simpan referensi untuk update
     
     public ManajemenDenda() {
+        if (!SessionHelper.checkAdmin(this)) return;
         try {
             this.dendaService = new DendaService();
             
