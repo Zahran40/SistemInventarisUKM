@@ -2,6 +2,14 @@
 
 Sistem manajemen inventaris untuk Unit Kegiatan Mahasiswa (UKM) dengan fitur login role-based (Admin & Peminjam).
 
+## Anggota Kelompok
+1. Abbil Rizki Abdillah-241402033 (Project Manager,FrontEnd,BackEnd,Laporan,PPT)
+2. Arialdy Manday-241402006 (FrontEnd)
+3. Aldrik Noel Sianipar-211402049 (BackEnd)
+4. Agnes Olivia Ketaren-241402066 (BackEnd)
+5. Jelita Amy Syafira Rangkuti - 241402117 (FrontEnd,PPT)
+6. Salwa Halila - 241402027 (PPT,Laporan)
+
 ## 🚀 Fitur
 
 ### Authentication
